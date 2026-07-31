@@ -75,7 +75,7 @@ class Jobo_Sync {
 
 		if ( '' === $settings['api_key'] ) {
 			$summary['status']  = 'skipped';
-			$summary['message'] = __( 'No API key configured.', 'jobo-jobs' );
+			$summary['message'] = __( 'No API key configured.', 'career-site-jobs' );
 			return $summary;
 		}
 
@@ -92,7 +92,7 @@ class Jobo_Sync {
 			// scan; upserts are idempotent so nothing is duplicated.
 			$this->state->reset_cursor();
 			$summary['status']  = 'restart';
-			$summary['message'] = __( 'The feed cursor expired. A full resync will run on the next scheduled sync.', 'jobo-jobs' );
+			$summary['message'] = __( 'The feed cursor expired. A full resync will run on the next scheduled sync.', 'career-site-jobs' );
 			$this->state->record_error( $summary['message'] );
 		} catch ( Jobo_Insufficient_Credits_Exception $e ) {
 			$summary['status']  = 'payment_required';

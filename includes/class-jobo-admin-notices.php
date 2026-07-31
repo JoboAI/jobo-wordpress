@@ -35,16 +35,16 @@ class Jobo_Admin_Notices {
 			return;
 		}
 
-		$settings_url = admin_url( 'options-general.php?page=jobo-jobs' );
+		$settings_url = admin_url( 'options-general.php?page=career-site-jobs' );
 
 		printf(
 			'<div class="notice notice-error"><p><strong>%s</strong> %s</p><p>%s</p></div>',
-			esc_html__( 'Jobo Jobs:', 'jobo-jobs' ),
+			esc_html__( 'Jobo Jobs:', 'career-site-jobs' ),
 			esc_html( $message ),
 			wp_kses_post(
 				sprintf(
 					/* translators: 1: settings page URL, 2: Jobo dashboard URL. */
-					__( '<a href="%1$s">Review your Jobo settings</a> or <a href="%2$s" target="_blank" rel="noopener">check your balance and API key</a>.', 'jobo-jobs' ),
+					__( '<a href="%1$s">Review your Jobo settings</a> or <a href="%2$s" target="_blank" rel="noopener">check your balance and API key</a>.', 'career-site-jobs' ),
 					esc_url( $settings_url ),
 					'https://enterprise.jobo.world/api-keys'
 				)

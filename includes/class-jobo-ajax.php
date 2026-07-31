@@ -33,7 +33,7 @@ class Jobo_Ajax {
 	private static function guard(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error(
-				array( 'message' => __( 'You do not have permission to do that.', 'jobo-jobs' ) ),
+				array( 'message' => __( 'You do not have permission to do that.', 'career-site-jobs' ) ),
 				403
 			);
 		}
@@ -64,7 +64,7 @@ class Jobo_Ajax {
 		$api_key = (string) Jobo_Settings::value( 'api_key', '' );
 		if ( '' === $api_key ) {
 			wp_send_json_error(
-				array( 'message' => __( 'Save an API key first, then the source list can load.', 'jobo-jobs' ) ),
+				array( 'message' => __( 'Save an API key first, then the source list can load.', 'career-site-jobs' ) ),
 				400
 			);
 		}
@@ -164,14 +164,14 @@ class Jobo_Ajax {
 
 		if ( '' === $key ) {
 			wp_send_json_error(
-				array( 'message' => __( 'Enter an API key first.', 'jobo-jobs' ) ),
+				array( 'message' => __( 'Enter an API key first.', 'career-site-jobs' ) ),
 				400
 			);
 		}
 
 		if ( ! Jobo_Client::is_valid_key_format( $key ) ) {
 			wp_send_json_error(
-				array( 'message' => __( 'That does not look like a Jobo API key. Keys begin with jbe_live_ or jbe_test_ and are 74 characters long.', 'jobo-jobs' ) ),
+				array( 'message' => __( 'That does not look like a Jobo API key. Keys begin with jbe_live_ or jbe_test_ and are 74 characters long.', 'career-site-jobs' ) ),
 				400
 			);
 		}
@@ -198,7 +198,7 @@ class Jobo_Ajax {
 		wp_send_json_success(
 			array(
 				'ok'              => true,
-				'message'         => __( 'Connected.', 'jobo-jobs' ),
+				'message'         => __( 'Connected.', 'career-site-jobs' ),
 				'credits_balance' => isset( $usage['credits_balance'] ) ? $usage['credits_balance'] : null,
 			)
 		);

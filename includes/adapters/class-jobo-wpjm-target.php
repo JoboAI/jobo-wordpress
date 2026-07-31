@@ -20,7 +20,7 @@ class Jobo_WPJM_Target extends Jobo_Abstract_Target {
 	}
 
 	public function get_label(): string {
-		return __( 'WP Job Manager', 'jobo-jobs' );
+		return __( 'WP Job Manager', 'career-site-jobs' );
 	}
 
 	public function is_available(): bool {

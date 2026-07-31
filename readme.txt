@@ -1,6 +1,6 @@
-=== Jobo Jobs - Automatic Job Board Feed ===
+=== Job Board & Career Site Jobs – Jobo ===
 Contributors: jobo
-Tags: job board, jobs, job listings, job feed, recruitment
+Tags: job board, job listings, career site, jobs, recruitment
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
@@ -12,7 +12,7 @@ Fill your job board automatically from millions of live jobs across 100+ ATS pla
 
 == Description ==
 
-**Jobo Jobs** keeps a WordPress job board stocked without anyone posting jobs by hand. It pulls live listings from Jobo's index of millions of jobs — sourced directly from employer career sites and 100+ applicant tracking systems including Greenhouse, Lever, Workday, Ashby, SmartRecruiters and BambooHR — and keeps them current on a schedule.
+**Job Board & Career Site Jobs** keeps a WordPress job board stocked without anyone posting jobs by hand. It pulls live listings from Jobo's index of millions of jobs — sourced directly from employer career sites and 100+ applicant tracking systems including Greenhouse, Lever, Workday, Ashby, SmartRecruiters and BambooHR — and keeps them current on a schedule.
 
 Works with **WP Job Manager** out of the box, writing the same fields your theme already renders. No WP Job Manager? The plugin ships its own job post type, so it works on any site.
 

@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name:       Jobo Jobs - Automatic Job Board Feed
+ * Plugin Name:       Job Board & Career Site Jobs – Jobo
  * Plugin URI:        https://jobo.world/integrations/wordpress
- * Description:       Fill your job board automatically from millions of jobs across 100+ ATS platforms. Incremental sync keeps listings fresh and expires them when they close.
+ * Description:       Fill your job board automatically with career site jobs from 100+ ATS platforms. Incremental sync keeps listings fresh and expires them when they close.
  * Version:           0.1.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
@@ -10,7 +10,7 @@
  * Author URI:        https://jobo.world
  * License:           MIT
  * License URI:       https://opensource.org/licenses/MIT
- * Text Domain:       jobo-jobs
+ * Text Domain:       career-site-jobs
  *
  * @package Jobo_Jobs
  */

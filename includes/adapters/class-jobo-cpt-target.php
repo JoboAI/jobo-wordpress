@@ -23,7 +23,7 @@ class Jobo_CPT_Target extends Jobo_Abstract_Target {
 	}
 
 	public function get_label(): string {
-		return __( 'Jobo Jobs (built-in)', 'jobo-jobs' );
+		return __( 'Jobo Jobs (built-in)', 'career-site-jobs' );
 	}
 
 	public function is_available(): bool {
@@ -43,9 +43,9 @@ class Jobo_CPT_Target extends Jobo_Abstract_Target {
 			self::POST_TYPE,
 			array(
 				'labels'       => array(
-					'name'          => __( 'Jobs', 'jobo-jobs' ),
-					'singular_name' => __( 'Job', 'jobo-jobs' ),
-					'menu_name'     => __( 'Jobs', 'jobo-jobs' ),
+					'name'          => __( 'Jobs', 'career-site-jobs' ),
+					'singular_name' => __( 'Job', 'career-site-jobs' ),
+					'menu_name'     => __( 'Jobs', 'career-site-jobs' ),
 				),
 				'public'       => true,
 				'has_archive'  => true,

@@ -247,7 +247,7 @@ class Jobo_Client {
 
 		if ( '' === $message ) {
 			/* translators: %d: HTTP status code. */
-			$message = sprintf( __( 'The Jobo API returned HTTP %d.', 'jobo-jobs' ), $status );
+			$message = sprintf( __( 'The Jobo API returned HTTP %d.', 'career-site-jobs' ), $status );
 		}
 
 		// Escaped here rather than at each render site: these messages are

@@ -90,7 +90,7 @@ class Jobo_Settings {
 			add_settings_error(
 				self::OPTION_NAME,
 				'jobo_invalid_key',
-				__( 'That does not look like a Jobo API key. Keys begin with jbe_live_ or jbe_test_ and are 74 characters long. Your previous key has been kept.', 'jobo-jobs' ),
+				__( 'That does not look like a Jobo API key. Keys begin with jbe_live_ or jbe_test_ and are 74 characters long. Your previous key has been kept.', 'career-site-jobs' ),
 				'error'
 			);
 		}

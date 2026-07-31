@@ -10,7 +10,7 @@
 
 /* The style guide's surfaces are white; wp-admin's content area is #f0f0f1.
    Scoped to this screen's body class so no other admin page is touched. */
-body.settings_page_jobo-jobs #wpbody-content {
+body.settings_page_career-site-jobs #wpbody-content {
 	background: #fff;
 	min-height: calc(100vh - 32px);
 }

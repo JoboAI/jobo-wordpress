@@ -74,10 +74,10 @@ class Jobo_Plugin {
 
 	public function add_settings_page(): void {
 		$hook = add_options_page(
-			__( 'Jobo Jobs', 'jobo-jobs' ),
-			__( 'Jobo Jobs', 'jobo-jobs' ),
+			__( 'Jobo Jobs', 'career-site-jobs' ),
+			__( 'Jobo Jobs', 'career-site-jobs' ),
 			'manage_options',
-			'jobo-jobs',
+			'career-site-jobs',
 			array( $this, 'render_settings_page' )
 		);
 
@@ -124,17 +124,17 @@ class Jobo_Plugin {
 			'savedLocations' => $location_lines,
 			'savedSources'   => array_values( (array) $settings['sources'] ),
 			'i18n'           => array(
-				'locationsPlaceholder' => __( 'Search for a city, region or country', 'jobo-jobs' ),
-				'locationsAriaLabel'   => __( 'Locations', 'jobo-jobs' ),
-				'sourcesPlaceholder'   => __( 'Type to filter sources, for example greenhouse', 'jobo-jobs' ),
-				'sourcesAriaLabel'     => __( 'Sources', 'jobo-jobs' ),
-				'noMatches'            => __( 'No matches', 'jobo-jobs' ),
-				'connected'            => __( 'Connected', 'jobo-jobs' ),
+				'locationsPlaceholder' => __( 'Search for a city, region or country', 'career-site-jobs' ),
+				'locationsAriaLabel'   => __( 'Locations', 'career-site-jobs' ),
+				'sourcesPlaceholder'   => __( 'Type to filter sources, for example greenhouse', 'career-site-jobs' ),
+				'sourcesAriaLabel'     => __( 'Sources', 'career-site-jobs' ),
+				'noMatches'            => __( 'No matches', 'career-site-jobs' ),
+				'connected'            => __( 'Connected', 'career-site-jobs' ),
 				/* translators: %s: remaining credit count. */
-				'connectedCredits'     => __( 'Connected — %s credits remaining', 'jobo-jobs' ),
-				'connectionFailed'     => __( 'The connection test failed.', 'jobo-jobs' ),
+				'connectedCredits'     => __( 'Connected — %s credits remaining', 'career-site-jobs' ),
+				'connectionFailed'     => __( 'The connection test failed.', 'career-site-jobs' ),
 				/* translators: %d: HTTP status code. */
-				'requestFailed'        => __( 'The request failed (HTTP %d).', 'jobo-jobs' ),
+				'requestFailed'        => __( 'The request failed (HTTP %d).', 'career-site-jobs' ),
 			),
 		);
 
@@ -176,7 +176,7 @@ class Jobo_Plugin {
 	 */
 	private function guard( string $action ): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to do that.', 'jobo-jobs' ) );
+			wp_die( esc_html__( 'You do not have permission to do that.', 'career-site-jobs' ) );
 		}
 		check_admin_referer( $action );
 	}
@@ -188,7 +188,7 @@ class Jobo_Plugin {
 		wp_safe_redirect(
 			add_query_arg(
 				array_merge( array( 'jobo_result' => $result ), $args ),
-				admin_url( 'options-general.php?page=jobo-jobs' )
+				admin_url( 'options-general.php?page=career-site-jobs' )
 			)
 		);
 		exit;

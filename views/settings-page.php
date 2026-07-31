@@ -38,22 +38,22 @@ $jobo_has_error = ! empty( $state['last_error'] );
 
 if ( ! $has_key ) {
 	$jobo_badge_class = 'jobo-badge--neutral';
-	$jobo_badge_text  = __( 'Not connected', 'jobo-jobs' );
+	$jobo_badge_text  = __( 'Not connected', 'career-site-jobs' );
 } elseif ( $jobo_has_error ) {
 	$jobo_badge_class = 'jobo-badge--critical';
-	$jobo_badge_text  = __( 'Error', 'jobo-jobs' );
+	$jobo_badge_text  = __( 'Error', 'career-site-jobs' );
 } else {
 	$jobo_badge_class = 'jobo-badge--success';
-	$jobo_badge_text  = __( 'Connected', 'jobo-jobs' );
+	$jobo_badge_text  = __( 'Connected', 'career-site-jobs' );
 }
 ?>
 <div class="wrap jobo-admin">
 
 	<div class="jobo-header">
 		<div>
-			<p class="jobo-eyebrow"><?php esc_html_e( 'WordPress connector', 'jobo-jobs' ); ?></p>
+			<p class="jobo-eyebrow"><?php esc_html_e( 'WordPress connector', 'career-site-jobs' ); ?></p>
 			<h1 class="jobo-title">
-				<?php esc_html_e( 'Jobo jobs', 'jobo-jobs' ); ?>
+				<?php esc_html_e( 'Jobo jobs', 'career-site-jobs' ); ?>
 				<span class="jobo-badge <?php echo esc_attr( $jobo_badge_class ); ?>"><?php echo esc_html( $jobo_badge_text ); ?></span>
 			</h1>
 		</div>
@@ -63,12 +63,12 @@ if ( ! $has_key ) {
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="<?php echo esc_attr( Jobo_Plugin::ACTION_SYNC_NOW ); ?>" />
 					<?php wp_nonce_field( Jobo_Plugin::ACTION_SYNC_NOW ); ?>
-					<button type="submit" class="jobo-btn jobo-btn--secondary"><?php esc_html_e( 'Sync now', 'jobo-jobs' ); ?></button>
+					<button type="submit" class="jobo-btn jobo-btn--secondary"><?php esc_html_e( 'Sync now', 'career-site-jobs' ); ?></button>
 				</form>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="<?php echo esc_attr( Jobo_Plugin::ACTION_RESYNC ); ?>" />
 					<?php wp_nonce_field( Jobo_Plugin::ACTION_RESYNC ); ?>
-					<button type="submit" class="jobo-btn jobo-btn--subtle"><?php esc_html_e( 'Resync everything', 'jobo-jobs' ); ?></button>
+					<button type="submit" class="jobo-btn jobo-btn--subtle"><?php esc_html_e( 'Resync everything', 'career-site-jobs' ); ?></button>
 				</form>
 			</div>
 		<?php endif; ?>
@@ -85,7 +85,7 @@ if ( ! $has_key ) {
 				<?php
 				printf(
 					/* translators: 1: jobs created, 2: jobs updated, 3: jobs expired. */
-					esc_html__( 'Sync complete. %1$s added, %2$s updated, %3$s expired.', 'jobo-jobs' ),
+					esc_html__( 'Sync complete. %1$s added, %2$s updated, %3$s expired.', 'career-site-jobs' ),
 					esc_html( $jobo_fmt( $jobo_created ) ),
 					esc_html( $jobo_fmt( $jobo_updated ) ),
 					esc_html( $jobo_fmt( $jobo_expired ) )
@@ -95,7 +95,7 @@ if ( ! $has_key ) {
 		</div>
 	<?php elseif ( 'failed' === $jobo_result ) : ?>
 		<div class="jobo-banner jobo-banner--critical">
-			<p><?php esc_html_e( 'The sync did not complete. See the details below.', 'jobo-jobs' ); ?></p>
+			<p><?php esc_html_e( 'The sync did not complete. See the details below.', 'career-site-jobs' ); ?></p>
 		</div>
 	<?php endif; ?>
 
@@ -106,7 +106,7 @@ if ( ! $has_key ) {
 				printf(
 					wp_kses(
 						/* translators: %s: Jobo API keys URL. */
-						__( 'Add your Jobo API key below to start importing jobs. <a href="%s" target="_blank" rel="noopener">Create a key</a> — it takes about a minute.', 'jobo-jobs' ),
+						__( 'Add your Jobo API key below to start importing jobs. <a href="%s" target="_blank" rel="noopener">Create a key</a> — it takes about a minute.', 'career-site-jobs' ),
 						array(
 							'a' => array(
 								'href'   => array(),
@@ -123,24 +123,24 @@ if ( ! $has_key ) {
 	<?php endif; ?>
 
 	<section class="jobo-section">
-		<h2 class="jobo-section-title"><?php esc_html_e( 'Status', 'jobo-jobs' ); ?></h2>
+		<h2 class="jobo-section-title"><?php esc_html_e( 'Status', 'career-site-jobs' ); ?></h2>
 
 		<div class="jobo-defgrid">
 			<div class="jobo-defgrid-row">
-				<div class="jobo-defgrid-label"><?php esc_html_e( 'Importing into', 'jobo-jobs' ); ?></div>
+				<div class="jobo-defgrid-label"><?php esc_html_e( 'Importing into', 'career-site-jobs' ); ?></div>
 				<div class="jobo-defgrid-value"><?php echo esc_html( $target->get_label() ); ?></div>
 			</div>
 			<div class="jobo-defgrid-row">
-				<div class="jobo-defgrid-label"><?php esc_html_e( 'Last sync', 'jobo-jobs' ); ?></div>
+				<div class="jobo-defgrid-label"><?php esc_html_e( 'Last sync', 'career-site-jobs' ); ?></div>
 				<div class="jobo-defgrid-value">
 					<?php
 					if ( empty( $state['last_sync_at'] ) ) {
-						esc_html_e( 'Never', 'jobo-jobs' );
+						esc_html_e( 'Never', 'career-site-jobs' );
 					} else {
 						echo esc_html(
 							sprintf(
 								/* translators: %s: human-readable time difference. */
-								__( '%s ago', 'jobo-jobs' ),
+								__( '%s ago', 'career-site-jobs' ),
 								human_time_diff( (int) $state['last_sync_at'], time() )
 							)
 						);
@@ -149,36 +149,36 @@ if ( ! $has_key ) {
 				</div>
 			</div>
 			<div class="jobo-defgrid-row">
-				<div class="jobo-defgrid-label"><?php esc_html_e( 'Scan position', 'jobo-jobs' ); ?></div>
+				<div class="jobo-defgrid-label"><?php esc_html_e( 'Scan position', 'career-site-jobs' ); ?></div>
 				<div class="jobo-defgrid-value">
 					<?php
 					echo '' === (string) $state['feed_cursor']
-						? esc_html__( 'Idle — the next run starts a fresh scan.', 'jobo-jobs' )
-						: esc_html__( 'Part-way through a scan; the next run resumes where it stopped.', 'jobo-jobs' );
+						? esc_html__( 'Idle — the next run starts a fresh scan.', 'career-site-jobs' )
+						: esc_html__( 'Part-way through a scan; the next run resumes where it stopped.', 'career-site-jobs' );
 					?>
 				</div>
 			</div>
 			<div class="jobo-defgrid-row">
-				<div class="jobo-defgrid-label"><?php esc_html_e( 'Jobs added', 'jobo-jobs' ); ?></div>
+				<div class="jobo-defgrid-label"><?php esc_html_e( 'Jobs added', 'career-site-jobs' ); ?></div>
 				<div class="jobo-defgrid-value jobo-num"><?php echo esc_html( $jobo_fmt( (int) $state['imported_total'] ) ); ?></div>
 			</div>
 			<div class="jobo-defgrid-row">
-				<div class="jobo-defgrid-label"><?php esc_html_e( 'Jobs updated', 'jobo-jobs' ); ?></div>
+				<div class="jobo-defgrid-label"><?php esc_html_e( 'Jobs updated', 'career-site-jobs' ); ?></div>
 				<div class="jobo-defgrid-value jobo-num"><?php echo esc_html( $jobo_fmt( (int) $state['updated_total'] ) ); ?></div>
 			</div>
 			<div class="jobo-defgrid-row">
-				<div class="jobo-defgrid-label"><?php esc_html_e( 'Jobs expired', 'jobo-jobs' ); ?></div>
+				<div class="jobo-defgrid-label"><?php esc_html_e( 'Jobs expired', 'career-site-jobs' ); ?></div>
 				<div class="jobo-defgrid-value jobo-num"><?php echo esc_html( $jobo_fmt( (int) $state['expired_total'] ) ); ?></div>
 			</div>
 			<?php if ( null !== $state['credits_balance'] ) : ?>
 				<div class="jobo-defgrid-row">
-					<div class="jobo-defgrid-label"><?php esc_html_e( 'Credit balance', 'jobo-jobs' ); ?></div>
+					<div class="jobo-defgrid-label"><?php esc_html_e( 'Credit balance', 'career-site-jobs' ); ?></div>
 					<div class="jobo-defgrid-value jobo-num">
 						<?php
 						echo esc_html(
 							sprintf(
 								/* translators: 1: credit count, 2: approximate dollar value. */
-								__( '%1$s credits (about $%2$s)', 'jobo-jobs' ),
+								__( '%1$s credits (about $%2$s)', 'career-site-jobs' ),
 								$jobo_fmt( (int) $state['credits_balance'] ),
 								number_format_i18n( (int) $state['credits_balance'] / 1000, 2 )
 							)
@@ -197,7 +197,7 @@ if ( ! $has_key ) {
 
 		<?php if ( $has_key ) : ?>
 			<p class="jobo-section-desc">
-				<?php esc_html_e( 'Resyncing walks the whole feed again from the start. Existing listings are matched on their Jobo job ID and updated in place, so nothing is duplicated.', 'jobo-jobs' ); ?>
+				<?php esc_html_e( 'Resyncing walks the whole feed again from the start. Existing listings are matched on their Jobo job ID and updated in place, so nothing is duplicated.', 'career-site-jobs' ); ?>
 			</p>
 		<?php endif; ?>
 	</section>
@@ -206,17 +206,17 @@ if ( ! $has_key ) {
 		<?php settings_fields( Jobo_Settings::OPTION_GROUP ); ?>
 
 		<section class="jobo-section">
-			<h2 class="jobo-section-title"><?php esc_html_e( 'Connection', 'jobo-jobs' ); ?></h2>
+			<h2 class="jobo-section-title"><?php esc_html_e( 'Connection', 'career-site-jobs' ); ?></h2>
 
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
-					<label for="jobo_api_key"><?php esc_html_e( 'API key', 'jobo-jobs' ); ?></label>
+					<label for="jobo_api_key"><?php esc_html_e( 'API key', 'career-site-jobs' ); ?></label>
 					<p class="jobo-field-desc">
 						<?php
 						printf(
 							wp_kses(
 								/* translators: %s: Jobo API keys URL. */
-								__( 'Starts with <code>jbe_live_</code>. <a href="%s" target="_blank" rel="noopener">Get one from the API keys page on enterprise.jobo.world</a>. Leave the masked value untouched to keep the current key.', 'jobo-jobs' ),
+								__( 'Starts with <code>jbe_live_</code>. <a href="%s" target="_blank" rel="noopener">Get one from the API keys page on enterprise.jobo.world</a>. Leave the masked value untouched to keep the current key.', 'career-site-jobs' ),
 								array(
 									'code' => array(),
 									'a'    => array(
@@ -241,11 +241,11 @@ if ( ! $has_key ) {
 							value="<?php echo $has_key ? esc_attr( str_repeat( '*', 24 ) ) : ''; ?>"
 							autocomplete="off"
 						/>
-						<button type="button" id="jobo-test-connection" class="jobo-btn jobo-btn--secondary"><?php esc_html_e( 'Test connection', 'jobo-jobs' ); ?></button>
+						<button type="button" id="jobo-test-connection" class="jobo-btn jobo-btn--secondary"><?php esc_html_e( 'Test connection', 'career-site-jobs' ); ?></button>
 						<span id="jobo-test-spinner" class="jobo-spinner" hidden aria-hidden="true"></span>
 					</div>
 					<p id="jobo-key-format-help" class="jobo-help jobo-help--critical" hidden>
-						<?php esc_html_e( 'That does not look like a Jobo API key. Keys begin with jbe_live_ or jbe_test_ and are 74 characters long.', 'jobo-jobs' ); ?>
+						<?php esc_html_e( 'That does not look like a Jobo API key. Keys begin with jbe_live_ or jbe_test_ and are 74 characters long.', 'career-site-jobs' ); ?>
 					</p>
 					<p id="jobo-test-result" class="jobo-test-result" hidden aria-live="polite"></p>
 				</div>
@@ -253,20 +253,20 @@ if ( ! $has_key ) {
 		</section>
 
 		<section class="jobo-section">
-			<h2 class="jobo-section-title"><?php esc_html_e( 'Import behaviour', 'jobo-jobs' ); ?></h2>
+			<h2 class="jobo-section-title"><?php esc_html_e( 'Import behaviour', 'career-site-jobs' ); ?></h2>
 
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
-					<label for="jobo_target"><?php esc_html_e( 'Import into', 'jobo-jobs' ); ?></label>
-					<p class="jobo-field-desc"><?php esc_html_e( 'Automatic uses WP Job Manager when it is active, and the built-in post type otherwise.', 'jobo-jobs' ); ?></p>
+					<label for="jobo_target"><?php esc_html_e( 'Import into', 'career-site-jobs' ); ?></label>
+					<p class="jobo-field-desc"><?php esc_html_e( 'Automatic uses WP Job Manager when it is active, and the built-in post type otherwise.', 'career-site-jobs' ); ?></p>
 				</div>
 				<div class="jobo-field-control">
 					<select id="jobo_target" name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[target]">
 						<?php
 						$jobo_targets = array(
-							'auto' => __( 'Detect automatically', 'jobo-jobs' ),
-							'wpjm' => __( 'WP Job Manager', 'jobo-jobs' ),
-							'cpt'  => __( 'Jobo Jobs (built-in post type)', 'jobo-jobs' ),
+							'auto' => __( 'Detect automatically', 'career-site-jobs' ),
+							'wpjm' => __( 'WP Job Manager', 'career-site-jobs' ),
+							'cpt'  => __( 'Jobo Jobs (built-in post type)', 'career-site-jobs' ),
 						);
 						foreach ( $jobo_targets as $jobo_value => $jobo_label ) :
 							?>
@@ -280,16 +280,16 @@ if ( ! $has_key ) {
 
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
-					<label for="jobo_post_status"><?php esc_html_e( 'Status for new listings', 'jobo-jobs' ); ?></label>
-					<p class="jobo-field-desc"><?php esc_html_e( 'Only applies to new listings. Updates never change the status of a listing you have edited.', 'jobo-jobs' ); ?></p>
+					<label for="jobo_post_status"><?php esc_html_e( 'Status for new listings', 'career-site-jobs' ); ?></label>
+					<p class="jobo-field-desc"><?php esc_html_e( 'Only applies to new listings. Updates never change the status of a listing you have edited.', 'career-site-jobs' ); ?></p>
 				</div>
 				<div class="jobo-field-control">
 					<select id="jobo_post_status" name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[post_status]">
 						<?php
 						foreach ( array(
-							'publish' => __( 'Published', 'jobo-jobs' ),
-							'draft'   => __( 'Draft (review before publishing)', 'jobo-jobs' ),
-							'pending' => __( 'Pending review', 'jobo-jobs' ),
+							'publish' => __( 'Published', 'career-site-jobs' ),
+							'draft'   => __( 'Draft (review before publishing)', 'career-site-jobs' ),
+							'pending' => __( 'Pending review', 'career-site-jobs' ),
 						) as $jobo_value => $jobo_label ) :
 							?>
 							<option value="<?php echo esc_attr( $jobo_value ); ?>" <?php selected( $settings['post_status'], $jobo_value ); ?>>
@@ -302,16 +302,16 @@ if ( ! $has_key ) {
 
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
-					<label for="jobo_expire_action"><?php esc_html_e( 'When a job closes', 'jobo-jobs' ); ?></label>
-					<p class="jobo-field-desc"><?php esc_html_e( 'Checking for closed jobs never costs credits.', 'jobo-jobs' ); ?></p>
+					<label for="jobo_expire_action"><?php esc_html_e( 'When a job closes', 'career-site-jobs' ); ?></label>
+					<p class="jobo-field-desc"><?php esc_html_e( 'Checking for closed jobs never costs credits.', 'career-site-jobs' ); ?></p>
 				</div>
 				<div class="jobo-field-control">
 					<select id="jobo_expire_action" name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[expire_action]">
 						<?php
 						foreach ( array(
-							'draft' => __( 'Move to draft', 'jobo-jobs' ),
-							'trash' => __( 'Move to trash', 'jobo-jobs' ),
-							'keep'  => __( 'Leave it published', 'jobo-jobs' ),
+							'draft' => __( 'Move to draft', 'career-site-jobs' ),
+							'trash' => __( 'Move to trash', 'career-site-jobs' ),
+							'keep'  => __( 'Leave it published', 'career-site-jobs' ),
 						) as $jobo_value => $jobo_label ) :
 							?>
 							<option value="<?php echo esc_attr( $jobo_value ); ?>" <?php selected( $settings['expire_action'], $jobo_value ); ?>>
@@ -324,15 +324,15 @@ if ( ! $has_key ) {
 
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
-					<label for="jobo_sync_interval"><?php esc_html_e( 'Sync frequency', 'jobo-jobs' ); ?></label>
+					<label for="jobo_sync_interval"><?php esc_html_e( 'Sync frequency', 'career-site-jobs' ); ?></label>
 				</div>
 				<div class="jobo-field-control">
 					<select id="jobo_sync_interval" name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[sync_interval]">
 						<?php
 						foreach ( array(
-							'hourly'     => __( 'Hourly', 'jobo-jobs' ),
-							'twicedaily' => __( 'Twice daily', 'jobo-jobs' ),
-							'daily'      => __( 'Daily', 'jobo-jobs' ),
+							'hourly'     => __( 'Hourly', 'career-site-jobs' ),
+							'twicedaily' => __( 'Twice daily', 'career-site-jobs' ),
+							'daily'      => __( 'Daily', 'career-site-jobs' ),
 						) as $jobo_value => $jobo_label ) :
 							?>
 							<option value="<?php echo esc_attr( $jobo_value ); ?>" <?php selected( $settings['sync_interval'], $jobo_value ); ?>>
@@ -345,16 +345,16 @@ if ( ! $has_key ) {
 
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
-					<label for="jobo_batch_size"><?php esc_html_e( 'Batch limits', 'jobo-jobs' ); ?></label>
-					<p class="jobo-field-desc"><?php esc_html_e( 'These multiply into the most jobs one run will import. Feed jobs cost $1 per 1,000, and nothing at all on a Jobs Feed plan.', 'jobo-jobs' ); ?></p>
+					<label for="jobo_batch_size"><?php esc_html_e( 'Batch limits', 'career-site-jobs' ); ?></label>
+					<p class="jobo-field-desc"><?php esc_html_e( 'These multiply into the most jobs one run will import. Feed jobs cost $1 per 1,000, and nothing at all on a Jobs Feed plan.', 'career-site-jobs' ); ?></p>
 				</div>
 				<div class="jobo-field-control">
 					<div class="jobo-inline-controls">
-						<label class="jobo-sub-label" for="jobo_batch_size"><?php esc_html_e( 'Jobs per request', 'jobo-jobs' ); ?></label>
+						<label class="jobo-sub-label" for="jobo_batch_size"><?php esc_html_e( 'Jobs per request', 'career-site-jobs' ); ?></label>
 						<input type="number" id="jobo_batch_size" min="1" max="1000"
 							name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[batch_size]"
 							value="<?php echo esc_attr( (string) $settings['batch_size'] ); ?>" />
-						<label class="jobo-sub-label" for="jobo_max_batches"><?php esc_html_e( 'Requests per run', 'jobo-jobs' ); ?></label>
+						<label class="jobo-sub-label" for="jobo_max_batches"><?php esc_html_e( 'Requests per run', 'career-site-jobs' ); ?></label>
 						<input type="number" id="jobo_max_batches" min="1" max="50"
 							name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[max_batches]"
 							value="<?php echo esc_attr( (string) $settings['max_batches'] ); ?>" />
@@ -364,9 +364,9 @@ if ( ! $has_key ) {
 		</section>
 
 		<section class="jobo-section">
-			<h2 class="jobo-section-title"><?php esc_html_e( 'Which jobs to import', 'jobo-jobs' ); ?></h2>
+			<h2 class="jobo-section-title"><?php esc_html_e( 'Which jobs to import', 'career-site-jobs' ); ?></h2>
 			<p class="jobo-section-desc">
-				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing the filters keeps your board relevant and reduces cost, since you are billed per job delivered.', 'jobo-jobs' ); ?>
+				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing the filters keeps your board relevant and reduces cost, since you are billed per job delivered.', 'career-site-jobs' ); ?>
 			</p>
 			<?php
 			// Deliberately no skills or industries fields here: the feed
@@ -377,9 +377,9 @@ if ( ! $has_key ) {
 
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
-					<label for="jobo_locations"><?php esc_html_e( 'Locations', 'jobo-jobs' ); ?></label>
+					<label for="jobo_locations"><?php esc_html_e( 'Locations', 'career-site-jobs' ); ?></label>
 					<p class="jobo-field-desc">
-						<?php esc_html_e( 'Use "Country", "Region, Country", or "City, Region, Country" — for example: Germany / Bavaria, Germany / Berlin, Berlin, Germany', 'jobo-jobs' ); ?>
+						<?php esc_html_e( 'Use "Country", "Region, Country", or "City, Region, Country" — for example: Germany / Bavaria, Germany / Berlin, Berlin, Germany', 'career-site-jobs' ); ?>
 					</p>
 				</div>
 				<div class="jobo-field-control">
@@ -394,15 +394,15 @@ if ( ! $has_key ) {
 					<textarea id="jobo_locations" rows="4" class="jobo-locations-textarea"
 						name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[locations]"><?php echo esc_textarea( (string) $settings['locations'] ); ?></textarea>
 					<noscript>
-						<p class="jobo-field-desc"><?php esc_html_e( 'Enter one location per line.', 'jobo-jobs' ); ?></p>
+						<p class="jobo-field-desc"><?php esc_html_e( 'Enter one location per line.', 'career-site-jobs' ); ?></p>
 					</noscript>
 				</div>
 			</div>
 
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
-					<span class="jobo-field-name" id="jobo-sources-label"><?php esc_html_e( 'Sources', 'jobo-jobs' ); ?></span>
-					<p class="jobo-field-desc"><?php esc_html_e( 'ATS sources, for example: greenhouse, lever_co, ashby. Leave blank for all.', 'jobo-jobs' ); ?></p>
+					<span class="jobo-field-name" id="jobo-sources-label"><?php esc_html_e( 'Sources', 'career-site-jobs' ); ?></span>
+					<p class="jobo-field-desc"><?php esc_html_e( 'ATS sources, for example: greenhouse, lever_co, ashby. Leave blank for all.', 'career-site-jobs' ); ?></p>
 				</div>
 				<div class="jobo-field-control">
 					<div id="jobo-sources-cb" class="jobo-cb-mount"></div>
@@ -418,16 +418,16 @@ if ( ! $has_key ) {
 						<input type="text" id="jobo_sources_noscript" class="jobo-input--mono" style="width:100%;max-width:640px"
 							name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[sources]"
 							value="<?php echo esc_attr( implode( ', ', (array) $settings['sources'] ) ); ?>" />
-						<p class="jobo-field-desc"><?php esc_html_e( 'Comma-separated source keys.', 'jobo-jobs' ); ?></p>
+						<p class="jobo-field-desc"><?php esc_html_e( 'Comma-separated source keys.', 'career-site-jobs' ); ?></p>
 					</noscript>
 				</div>
 			</div>
 
 			<?php
 			$jobo_checkbox_groups = array(
-				'work_models'       => array( __( 'Work model', 'jobo-jobs' ), Jobo_Settings::WORK_MODELS ),
-				'employment_types'  => array( __( 'Employment type', 'jobo-jobs' ), Jobo_Settings::EMPLOYMENT_TYPES ),
-				'experience_levels' => array( __( 'Experience level', 'jobo-jobs' ), Jobo_Settings::EXPERIENCE_LEVELS ),
+				'work_models'       => array( __( 'Work model', 'career-site-jobs' ), Jobo_Settings::WORK_MODELS ),
+				'employment_types'  => array( __( 'Employment type', 'career-site-jobs' ), Jobo_Settings::EMPLOYMENT_TYPES ),
+				'experience_levels' => array( __( 'Experience level', 'career-site-jobs' ), Jobo_Settings::EXPERIENCE_LEVELS ),
 			);
 			foreach ( $jobo_checkbox_groups as $jobo_key => $jobo_group ) :
 				list( $jobo_label, $jobo_options ) = $jobo_group;
@@ -456,7 +456,7 @@ if ( ! $has_key ) {
 		</section>
 
 		<p>
-			<button type="submit" class="jobo-btn jobo-btn--primary"><?php esc_html_e( 'Save changes', 'jobo-jobs' ); ?></button>
+			<button type="submit" class="jobo-btn jobo-btn--primary"><?php esc_html_e( 'Save changes', 'career-site-jobs' ); ?></button>
 		</p>
 	</form>
 </div>
