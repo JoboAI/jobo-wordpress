@@ -1,0 +1,643 @@
+/**
+ * Settings-screen styles, scoped under .jobo-admin so nothing leaks into the
+ * rest of wp-admin. Consumes the design tokens from tokens.css and follows the
+ * render-style contract documented there: flat white surfaces, 1px hairlines,
+ * square corners everywhere (only the spinner is round), one purple accent,
+ * blue focus ring, deep-on-tint status pairs, sentence-case copy.
+ */
+
+/* ── Page frame ─────────────────────────────────────────────────────────── */
+
+/* The style guide's surfaces are white; wp-admin's content area is #f0f0f1.
+   Scoped to this screen's body class so no other admin page is touched. */
+body.settings_page_jobo-jobs #wpbody-content {
+	background: #fff;
+	min-height: calc(100vh - 32px);
+}
+
+.jobo-admin {
+	max-width: 960px;
+	padding-right: 20px;
+	font-family: var(--jobo-font-sans);
+	color: var(--jobo-ink-800);
+}
+
+.jobo-admin a {
+	color: var(--jobo-brand);
+	text-decoration: underline;
+	transition: color var(--jobo-transition);
+}
+
+.jobo-admin a:hover,
+.jobo-admin a:focus {
+	color: var(--jobo-brand-deep);
+	box-shadow: none;
+}
+
+.jobo-admin a:focus-visible {
+	outline: 2px solid var(--jobo-ring);
+	outline-offset: 1px;
+}
+
+.jobo-hairline {
+	height: 0;
+	margin: 16px 0 24px;
+	border: 0;
+	border-top: 1px solid var(--jobo-ink-200);
+}
+
+/* ── Header band ────────────────────────────────────────────────────────── */
+
+.jobo-header {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+	padding-top: 8px;
+}
+
+/* The one and only uppercase element on the page. */
+.jobo-eyebrow {
+	margin: 0 0 4px;
+	font-family: var(--jobo-font-mono);
+	font-size: 11px;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--jobo-ink-600);
+}
+
+.jobo-admin h1.jobo-title {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 0;
+	padding: 0;
+	font-family: var(--jobo-font-sans);
+	font-size: 28px;
+	font-weight: 500;
+	letter-spacing: -0.02em;
+	line-height: 1.2;
+	color: var(--jobo-ink-950);
+}
+
+.jobo-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.jobo-header-actions form {
+	display: inline-block;
+	margin: 0;
+}
+
+/* ── Badges ─────────────────────────────────────────────────────────────── */
+
+.jobo-badge {
+	display: inline-block;
+	padding: 3px 8px;
+	border-radius: 0;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0;
+	line-height: 1.4;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+.jobo-badge--success {
+	color: var(--jobo-success-fg);
+	background: var(--jobo-success-tint);
+}
+
+.jobo-badge--critical {
+	color: var(--jobo-critical-fg);
+	background: var(--jobo-critical-tint);
+}
+
+.jobo-badge--neutral {
+	color: var(--jobo-ink-600);
+	background: var(--jobo-ink-100);
+}
+
+/* ── Sections ───────────────────────────────────────────────────────────── */
+
+.jobo-section {
+	margin: 0 0 8px;
+	padding: 0 0 24px;
+	border-bottom: 1px solid var(--jobo-ink-200);
+}
+
+.jobo-section:last-of-type {
+	border-bottom: 0;
+}
+
+.jobo-admin h2.jobo-section-title {
+	margin: 24px 0 4px;
+	padding: 0;
+	font-size: 18px;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	color: var(--jobo-ink-950);
+}
+
+.jobo-section-desc {
+	margin: 0 0 16px;
+	max-width: 640px;
+	font-size: 13px;
+	color: var(--jobo-ink-600);
+}
+
+/* ── Status banners ─────────────────────────────────────────────────────── */
+
+.jobo-banner {
+	box-sizing: border-box;
+	width: 100%;
+	margin: 0 0 16px;
+	padding: 12px 16px;
+	border-radius: 0;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.jobo-banner p {
+	margin: 0;
+	font-size: 14px;
+	color: inherit;
+}
+
+.jobo-banner--success {
+	color: var(--jobo-success-fg);
+	background: var(--jobo-success-tint);
+}
+
+.jobo-banner--warning {
+	color: var(--jobo-warning-fg);
+	background: var(--jobo-warning-tint);
+}
+
+.jobo-banner--critical {
+	color: var(--jobo-critical-fg);
+	background: var(--jobo-critical-tint);
+}
+
+.jobo-banner--neutral {
+	color: var(--jobo-ink-700);
+	background: var(--jobo-ink-50);
+	border: 1px solid var(--jobo-ink-200);
+}
+
+/* ── Definition grid (status rows) ──────────────────────────────────────── */
+
+.jobo-defgrid {
+	margin: 8px 0 16px;
+	border-top: 1px solid var(--jobo-ink-200);
+}
+
+.jobo-defgrid-row {
+	display: grid;
+	grid-template-columns: 220px minmax(0, 1fr);
+	gap: 8px 24px;
+	padding: 10px 0;
+	border-bottom: 1px solid var(--jobo-ink-100);
+}
+
+.jobo-defgrid-label {
+	font-size: 13px;
+	color: var(--jobo-ink-600);
+}
+
+.jobo-defgrid-value {
+	font-size: 14px;
+	color: var(--jobo-ink-800);
+}
+
+.jobo-num {
+	font-variant-numeric: tabular-nums;
+}
+
+/* ── Definition-list form rows ──────────────────────────────────────────── */
+
+.jobo-field-row {
+	display: grid;
+	grid-template-columns: 280px minmax(0, 1fr);
+	gap: 8px 32px;
+	padding: 20px 0;
+	border-bottom: 1px solid var(--jobo-ink-100);
+}
+
+.jobo-field-row:last-child {
+	border-bottom: 0;
+}
+
+.jobo-field-label label,
+.jobo-field-label .jobo-field-name {
+	display: block;
+	margin: 0 0 4px;
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--jobo-ink-950);
+}
+
+.jobo-field-desc {
+	margin: 4px 0 0;
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--jobo-ink-600);
+}
+
+.jobo-field-control {
+	min-width: 0;
+	align-self: start;
+}
+
+.jobo-inline-controls {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.jobo-inline-controls .jobo-sub-label {
+	font-size: 13px;
+	color: var(--jobo-ink-600);
+}
+
+/* ── Inputs: neutralize wp-admin forms.css inside the scope ─────────────── */
+
+.jobo-admin input[type="text"],
+.jobo-admin input[type="password"],
+.jobo-admin input[type="number"],
+.jobo-admin input[type="email"],
+.jobo-admin input[type="url"],
+.jobo-admin input[type="search"],
+.jobo-admin select,
+.jobo-admin textarea {
+	box-sizing: border-box;
+	min-height: 40px;
+	padding: 0 12px;
+	border: 1px solid var(--jobo-ink-300);
+	border-radius: 0;
+	box-shadow: none;
+	background: #fff;
+	font-family: var(--jobo-font-sans);
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--jobo-ink-800);
+	transition: border-color var(--jobo-transition);
+}
+
+.jobo-admin textarea {
+	padding: 8px 12px;
+	line-height: 1.5;
+}
+
+.jobo-admin input[type="text"]:hover,
+.jobo-admin input[type="password"]:hover,
+.jobo-admin input[type="number"]:hover,
+.jobo-admin input[type="email"]:hover,
+.jobo-admin input[type="url"]:hover,
+.jobo-admin input[type="search"]:hover,
+.jobo-admin select:hover,
+.jobo-admin textarea:hover {
+	border-color: var(--jobo-ink-500);
+	color: var(--jobo-ink-800);
+}
+
+/* Replace wp-admin's #2271b1 focus with the blue ring (border + shadow = 2px). */
+.jobo-admin input[type="text"]:focus,
+.jobo-admin input[type="password"]:focus,
+.jobo-admin input[type="number"]:focus,
+.jobo-admin input[type="email"]:focus,
+.jobo-admin input[type="url"]:focus,
+.jobo-admin input[type="search"]:focus,
+.jobo-admin select:focus,
+.jobo-admin textarea:focus {
+	border-color: var(--jobo-ring);
+	box-shadow: 0 0 0 1px var(--jobo-ring);
+	outline: none;
+	color: var(--jobo-ink-800);
+}
+
+.jobo-admin input:disabled,
+.jobo-admin select:disabled,
+.jobo-admin textarea:disabled {
+	background: var(--jobo-ink-100);
+	color: var(--jobo-ink-400);
+	border-color: var(--jobo-ink-200);
+}
+
+.jobo-admin input[type="number"] {
+	width: 90px;
+	font-variant-numeric: tabular-nums;
+}
+
+.jobo-admin select {
+	max-width: 100%;
+	padding-right: 28px;
+}
+
+.jobo-input--mono {
+	font-family: var(--jobo-font-mono) !important;
+	font-size: 13px !important;
+}
+
+.jobo-key-input {
+	flex: 1 1 320px;
+	max-width: 460px;
+}
+
+.jobo-admin textarea.jobo-locations-textarea {
+	width: 100%;
+	max-width: 640px;
+	font-family: var(--jobo-font-mono);
+	font-size: 13px;
+}
+
+.jobo-cb-mount {
+	max-width: 640px;
+}
+
+/* Critical (invalid) input state: never opacity, just the critical pair. */
+.jobo-admin .jobo-input--invalid,
+.jobo-admin .jobo-input--invalid:hover {
+	border-color: var(--jobo-critical-fg);
+}
+
+.jobo-admin .jobo-input--invalid:focus {
+	border-color: var(--jobo-critical-fg);
+	box-shadow: 0 0 0 1px var(--jobo-critical-fg);
+}
+
+.jobo-help {
+	margin: 6px 0 0;
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.jobo-help--critical {
+	color: var(--jobo-critical-fg);
+}
+
+/* ── Checkboxes: square, ink, native glyph replaced ─────────────────────── */
+
+.jobo-admin input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+	min-height: 0;
+	margin: 0 6px 0 0;
+	padding: 0;
+	border: 1px solid var(--jobo-ink-300);
+	border-radius: 0;
+	box-shadow: none;
+	background: #fff;
+	vertical-align: text-top;
+	transition: border-color var(--jobo-transition), background-color var(--jobo-transition);
+}
+
+.jobo-admin input[type="checkbox"]:hover {
+	border-color: var(--jobo-ink-500);
+}
+
+.jobo-admin input[type="checkbox"]:focus {
+	border-color: var(--jobo-ring);
+	box-shadow: 0 0 0 1px var(--jobo-ring);
+	outline: none;
+}
+
+.jobo-admin input[type="checkbox"]:checked::before {
+	content: none;
+}
+
+.jobo-admin input[type="checkbox"]:checked {
+	background-color: var(--jobo-ink-950);
+	border-color: var(--jobo-ink-950);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='2' d='M3.5 8.5l3 3 6-7'/%3E%3C/svg%3E");
+	background-size: 12px 12px;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+.jobo-checkbox-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 20px;
+	border: 0;
+	margin: 0;
+	padding: 2px 0 0;
+}
+
+.jobo-checkbox-group label {
+	display: inline-flex;
+	align-items: center;
+	font-size: 14px;
+	color: var(--jobo-ink-800);
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+
+.jobo-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 40px;
+	padding: 0 16px;
+	border: 1px solid transparent;
+	border-radius: 0;
+	font-family: var(--jobo-font-sans);
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1;
+	cursor: pointer;
+	text-decoration: none;
+	transition: background-color var(--jobo-transition), border-color var(--jobo-transition), color var(--jobo-transition);
+}
+
+.jobo-btn:focus-visible {
+	outline: 2px solid var(--jobo-ring);
+	outline-offset: 1px;
+}
+
+.jobo-btn--primary {
+	background: var(--jobo-ink-950);
+	border-color: var(--jobo-ink-950);
+	color: #fff;
+}
+
+.jobo-btn--primary:hover {
+	background: var(--jobo-brand);
+	border-color: var(--jobo-brand);
+	color: #fff;
+}
+
+.jobo-btn--primary:active {
+	background: var(--jobo-brand-deep);
+	border-color: var(--jobo-brand-deep);
+	color: #fff;
+}
+
+.jobo-btn--secondary {
+	background: transparent;
+	border-color: var(--jobo-ink-950);
+	color: var(--jobo-ink-950);
+}
+
+.jobo-btn--secondary:hover {
+	border-color: var(--jobo-brand);
+	color: var(--jobo-brand);
+}
+
+.jobo-btn--secondary:active {
+	border-color: var(--jobo-brand-deep);
+	color: var(--jobo-brand-deep);
+}
+
+.jobo-btn--subtle {
+	background: transparent;
+	border-color: var(--jobo-ink-300);
+	color: var(--jobo-ink-700);
+}
+
+.jobo-btn--subtle:hover {
+	border-color: var(--jobo-ink-500);
+	color: var(--jobo-ink-950);
+}
+
+.jobo-btn--subtle:active {
+	border-color: var(--jobo-ink-950);
+	color: var(--jobo-ink-950);
+}
+
+/* Disabled is a fill change, never opacity. */
+.jobo-btn:disabled,
+.jobo-btn:disabled:hover,
+.jobo-btn:disabled:active {
+	background: var(--jobo-ink-100);
+	border-color: var(--jobo-ink-100);
+	color: var(--jobo-ink-400);
+	cursor: default;
+}
+
+/* ── Test connection ────────────────────────────────────────────────────── */
+
+.jobo-key-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+/* The only round element on the page. */
+.jobo-spinner {
+	width: 16px;
+	height: 16px;
+	border: 2px solid var(--jobo-ink-200);
+	border-top-color: var(--jobo-ink-600);
+	border-radius: 9999px;
+	animation: jobo-spin 0.6s linear infinite;
+}
+
+@keyframes jobo-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.jobo-test-result {
+	display: inline-block;
+	margin: 8px 0 0;
+	padding: 4px 8px;
+	font-size: 13px;
+	font-variant-numeric: tabular-nums;
+}
+
+.jobo-test-result--success {
+	color: var(--jobo-success-fg);
+	background: var(--jobo-success-tint);
+}
+
+.jobo-test-result--critical {
+	color: var(--jobo-critical-fg);
+	background: var(--jobo-critical-tint);
+}
+
+/* ── Core notices, relocated into the page by common.js ─────────────────── */
+
+.jobo-admin .notice {
+	margin: 0 0 16px;
+	padding: 12px 16px;
+	border-radius: 0;
+	box-shadow: none;
+	border: 1px solid var(--jobo-ink-200);
+	border-left-width: 4px;
+	background: #fff;
+}
+
+.jobo-admin .notice p {
+	margin: 0;
+	font-size: 14px;
+}
+
+.jobo-admin .notice-success {
+	border-left-color: var(--jobo-success-fg);
+}
+
+.jobo-admin .notice-warning {
+	border-left-color: var(--jobo-warning-fg);
+}
+
+.jobo-admin .notice-error {
+	border-left-color: var(--jobo-critical-fg);
+}
+
+.jobo-admin .notice-info {
+	border-left-color: var(--jobo-ink-500);
+}
+
+/* ── Utilities ──────────────────────────────────────────────────────────── */
+
+/*
+ * Visually hidden but still focusable and form-submittable — used for the
+ * locations textarea once the combobox mounts. Deliberately not display:none
+ * so assistive tech and the no-JS form path keep working.
+ */
+.jobo-visually-hidden {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	min-height: 0 !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	border: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	clip-path: inset(50%) !important;
+	white-space: nowrap !important;
+}
+
+/* ── Narrow screens ─────────────────────────────────────────────────────── */
+
+@media (max-width: 782px) {
+	.jobo-header {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+	.jobo-field-row,
+	.jobo-defgrid-row {
+		grid-template-columns: 1fr;
+		gap: 8px;
+	}
+
+	.jobo-admin input[type="text"],
+	.jobo-admin input[type="password"],
+	.jobo-admin input[type="email"],
+	.jobo-admin input[type="url"],
+	.jobo-admin input[type="search"],
+	.jobo-admin select,
+	.jobo-admin textarea {
+		min-height: 40px;
+	}
+}

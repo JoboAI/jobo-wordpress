@@ -1,0 +1,161 @@
+/* GENERATED from packages/connector-ui/combobox.css — edit there and run `node scripts/sync-ui-assets.mjs`. */
+/**
+ * Styles for the shared combobox (combobox.js). Selectors are all prefixed
+ * .jobo-cb- so no host scoping is needed; colors come from tokens.css.
+ * Square corners throughout — only the spinner may be round.
+ */
+.jobo-cb {
+  position: relative;
+  min-width: 0;
+}
+
+.jobo-cb-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 4px 12px;
+  background: #fff;
+  border: 1px solid var(--jobo-ink-300);
+  border-radius: 0;
+  cursor: text;
+  transition: border-color var(--jobo-transition);
+}
+
+.jobo-cb--dense .jobo-cb-field {
+  min-height: 36px;
+  padding: 3px 10px;
+}
+
+.jobo-cb-field:hover {
+  border-color: var(--jobo-ink-500);
+}
+
+.jobo-cb-field:focus-within {
+  border-color: var(--jobo-ring);
+  box-shadow: 0 0 0 1px var(--jobo-ring);
+}
+
+.jobo-cb--disabled .jobo-cb-field {
+  background: var(--jobo-ink-100);
+  cursor: not-allowed;
+}
+
+.jobo-cb-input {
+  flex: 1;
+  min-width: 80px;
+  border: 0;
+  padding: 4px 0;
+  margin: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--jobo-ink-800);
+  outline: none;
+  box-shadow: none;
+}
+
+.jobo-cb--dense .jobo-cb-input {
+  font-size: 13px;
+}
+
+.jobo-cb-input::placeholder {
+  color: var(--jobo-ink-400);
+}
+
+.jobo-cb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 2px 8px;
+  background: var(--jobo-ink-100);
+  border: 1px solid var(--jobo-ink-200);
+  border-radius: 0;
+  font-size: 13px;
+  color: var(--jobo-ink-800);
+}
+
+.jobo-cb-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jobo-cb-chip-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  color: var(--jobo-ink-600);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--jobo-transition), background-color var(--jobo-transition);
+}
+
+.jobo-cb-chip-x:hover {
+  background: var(--jobo-ink-200);
+  color: var(--jobo-ink-900);
+}
+
+.jobo-cb-chip-x:focus-visible {
+  outline: 2px solid var(--jobo-ring);
+  outline-offset: 1px;
+}
+
+.jobo-cb-list {
+  position: absolute;
+  z-index: 50;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 4px 0 0;
+  padding: 4px 0;
+  list-style: none;
+  max-height: 16rem;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--jobo-ink-200);
+  border-radius: 0;
+  /* The one allowed shadow: floating menus only, neutral gray. */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.jobo-cb-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--jobo-ink-800);
+  cursor: pointer;
+}
+
+.jobo-cb--dense .jobo-cb-option {
+  font-size: 13px;
+  padding: 7px 10px;
+}
+
+.jobo-cb-option[aria-selected="true"] {
+  background: var(--jobo-ink-100);
+}
+
+.jobo-cb-option-count {
+  margin-left: auto;
+  color: var(--jobo-ink-500);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.jobo-cb-empty {
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--jobo-ink-600);
+}
