@@ -30,12 +30,12 @@ Most job importers hand you a CSV or an RSS feed and leave the hard parts to you
 * Choose what happens when a job closes — draft it, trash it, or leave it up
 * Company name, website, logo, location, salary and apply URL mapped automatically
 * Hourly, twice-daily or daily sync via WP-Cron, plus a manual "Sync now"
-* Credit balance and sync history visible in the admin, so cost is never a surprise
+* Shared job allowance, credit balance and sync history visible in the admin
 * Handles rate limits, expired cursors and billing failures gracefully instead of silently stopping
 
 = Requirements =
 
-A Jobo API key. [Create one here](https://enterprise.jobo.world/api-keys) — the free tier is enough to try it out. Feed jobs are billed at $1 per 1,000 delivered, and are included at no extra cost on a Jobs Feed plan.
+A Jobo API key. [Create one here](https://enterprise.jobo.world/api-keys) — the free tier is enough to try it out. Feed imports use the shared Job Search allowance or the same $3 per 1,000 public direct job rate as Search; Jobs Feed makes Feed imports unlimited.
 
 == Installation ==
 
@@ -61,7 +61,7 @@ Updates never change the status of a listing, so if you unpublish something it s
 
 = How much does it cost? =
 
-Jobs delivered through the feed are billed at $1 per 1,000, and are included on a Jobs Feed plan. Checking for closed jobs is always free. The settings screen shows your current balance after every sync.
+Feed imports use your shared Job Search allowance first, then its tier overage rate. Without a plan, the current public direct rate is $3 per 1,000 jobs. Jobs Feed makes Feed imports unlimited. Checking for closed jobs is always free. The settings screen shows allowance and wallet state after every sync.
 
 = Does uninstalling delete my jobs? =
 

@@ -37,6 +37,8 @@ class Jobo_State {
 					'last_error_at'      => 0,
 					'expired_since'      => '',
 					'credits_balance'    => null,
+					'quota_limit'        => null,
+					'quota_remaining'    => null,
 					'imported_total'     => 0,
 					'updated_total'      => 0,
 					'expired_total'      => 0,

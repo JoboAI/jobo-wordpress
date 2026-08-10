@@ -170,6 +170,23 @@ if ( ! $has_key ) {
 				<div class="jobo-defgrid-label"><?php esc_html_e( 'Jobs expired', 'career-site-jobs' ); ?></div>
 				<div class="jobo-defgrid-value jobo-num"><?php echo esc_html( $jobo_fmt( (int) $state['expired_total'] ) ); ?></div>
 			</div>
+			<?php if ( null !== $state['quota_remaining'] ) : ?>
+				<div class="jobo-defgrid-row">
+					<div class="jobo-defgrid-label"><?php esc_html_e( 'Shared job allowance', 'career-site-jobs' ); ?></div>
+					<div class="jobo-defgrid-value jobo-num">
+						<?php
+						echo esc_html(
+							sprintf(
+								/* translators: 1: remaining jobs, 2: total included jobs. */
+								__( '%1$s of %2$s jobs remaining', 'career-site-jobs' ),
+								$jobo_fmt( (int) $state['quota_remaining'] ),
+								$jobo_fmt( (int) $state['quota_limit'] )
+							)
+						);
+						?>
+					</div>
+				</div>
+			<?php endif; ?>
 			<?php if ( null !== $state['credits_balance'] ) : ?>
 				<div class="jobo-defgrid-row">
 					<div class="jobo-defgrid-label"><?php esc_html_e( 'Credit balance', 'career-site-jobs' ); ?></div>
@@ -346,7 +363,7 @@ if ( ! $has_key ) {
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
 					<label for="jobo_batch_size"><?php esc_html_e( 'Batch limits', 'career-site-jobs' ); ?></label>
-					<p class="jobo-field-desc"><?php esc_html_e( 'These multiply into the most jobs one run will import. Feed jobs cost $1 per 1,000, and nothing at all on a Jobs Feed plan.', 'career-site-jobs' ); ?></p>
+					<p class="jobo-field-desc"><?php esc_html_e( 'These multiply into the most jobs one run will import. Jobs use your shared Job Search allowance first, then its tier rate; direct access is $3 per 1,000 at public list price, and Jobs Feed makes Feed imports unlimited.', 'career-site-jobs' ); ?></p>
 				</div>
 				<div class="jobo-field-control">
 					<div class="jobo-inline-controls">
@@ -366,7 +383,7 @@ if ( ! $has_key ) {
 		<section class="jobo-section">
 			<h2 class="jobo-section-title"><?php esc_html_e( 'Which jobs to import', 'career-site-jobs' ); ?></h2>
 			<p class="jobo-section-desc">
-				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing the filters keeps your board relevant and reduces cost, since you are billed per job delivered.', 'career-site-jobs' ); ?>
+				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing keeps your board relevant and usage predictable; shared allowance applies first, and Jobs Feed imports are unlimited.', 'career-site-jobs' ); ?>
 			</p>
 			<?php
 			// Deliberately no skills or industries fields here: the feed

@@ -87,7 +87,7 @@ class Jobo_Client {
 
 	/**
 	 * Verify a key as cheaply as the API allows — page_size=1 keeps the
-	 * worst-case credit precheck down to a single job.
+	 * worst-case allowance/wallet precheck down to a single job.
 	 *
 	 * @return array<string,mixed>
 	 * @throws Jobo_Api_Exception On a non-2xx response.
@@ -290,6 +290,8 @@ class Jobo_Client {
 		return array(
 			'credits_deducted'  => $read( 'x-credits-deducted' ),
 			'credits_balance'   => $read( 'x-credits-balance' ),
+			'quota_limit'       => $read( 'x-quota-limit' ),
+			'quota_remaining'   => $read( 'x-quota-remaining' ),
 			'ratelimit_remaining' => $read( 'x-ratelimit-remaining' ),
 			'ratelimit_reset'   => $read( 'x-ratelimit-reset' ),
 			'checked_at'        => time(),

@@ -200,6 +200,8 @@ class Jobo_Ajax {
 				'ok'              => true,
 				'message'         => __( 'Connected.', 'career-site-jobs' ),
 				'credits_balance' => isset( $usage['credits_balance'] ) ? $usage['credits_balance'] : null,
+				'quota_limit'     => isset( $usage['quota_limit'] ) ? $usage['quota_limit'] : null,
+				'quota_remaining' => isset( $usage['quota_remaining'] ) ? $usage['quota_remaining'] : null,
 			)
 		);
 	}

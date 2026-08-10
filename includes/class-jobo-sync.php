@@ -114,6 +114,8 @@ class Jobo_Sync {
 			array(
 				'last_sync_at'      => time(),
 				'credits_balance'   => $usage['credits_balance'] ?? $this->state->get( 'credits_balance' ),
+				'quota_limit'       => $usage['quota_limit'] ?? $this->state->get( 'quota_limit' ),
+				'quota_remaining'   => $usage['quota_remaining'] ?? $this->state->get( 'quota_remaining' ),
 				'last_run_imported' => $summary['created'],
 				'last_run_updated'  => $summary['updated'],
 				'last_run_expired'  => $summary['expired'],
