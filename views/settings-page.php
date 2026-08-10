@@ -363,7 +363,7 @@ if ( ! $has_key ) {
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
 					<label for="jobo_batch_size"><?php esc_html_e( 'Batch limits', 'career-site-jobs' ); ?></label>
-					<p class="jobo-field-desc"><?php esc_html_e( 'These multiply into the most jobs one run will import. Jobs use your shared Job Search allowance first, then its tier rate; direct access is $3 per 1,000 at public list price, and Jobs Feed makes Feed imports unlimited.', 'career-site-jobs' ); ?></p>
+					<p class="jobo-field-desc"><?php esc_html_e( 'These multiply into the most jobs one run will import. Jobs use your shared Job Search allowance first, then normal job pricing; direct access is $3 per 1,000 at public list price, and Jobs Feed makes Feed imports unlimited.', 'career-site-jobs' ); ?></p>
 				</div>
 				<div class="jobo-field-control">
 					<div class="jobo-inline-controls">

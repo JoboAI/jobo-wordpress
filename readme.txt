@@ -61,7 +61,7 @@ Updates never change the status of a listing, so if you unpublish something it s
 
 = How much does it cost? =
 
-Feed imports use your shared Job Search allowance first, then its tier overage rate. Without a plan, the current public direct rate is $3 per 1,000 jobs. Jobs Feed makes Feed imports unlimited. Checking for closed jobs is always free. The settings screen shows allowance and wallet state after every sync.
+Feed imports use your shared Job Search allowance first, then its normal job rate. Without a plan, the current public direct rate is $3 per 1,000 jobs. Jobs Feed makes Feed imports unlimited. Checking for closed jobs is always free. The settings screen shows allowance and wallet state after every sync.
 
 = Does uninstalling delete my jobs? =
 
