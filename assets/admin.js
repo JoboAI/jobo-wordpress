@@ -32,6 +32,12 @@
 		return String(Math.round(Number(n))).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
 	}
 
+	/** Credits -> "12 500.00"-style dollar figure (1,000 credits = $1.00). */
+	function formatDollars(credits) {
+		var parts = (Number(credits) / 1000).toFixed(2).split(".");
+		return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0") + "." + parts[1];
+	}
+
 	/**
 	 * POST to admin-ajax. Resolves with the `data` payload of a success
 	 * envelope; rejects with an Error carrying a readable message for both
@@ -282,7 +288,9 @@
 				.then(function (data) {
 					result.className = "jobo-test-result jobo-test-result--success";
 					if (data && data.credits_balance !== null && data.credits_balance !== undefined) {
-						result.textContent = t("connectedCredits", "Connected — %s credits remaining").replace("%s", formatNumber(data.credits_balance));
+						result.textContent = t("connectedCredits", "Connected — wallet balance $%1$s (%2$s credits)")
+							.replace("%1$s", formatDollars(data.credits_balance))
+							.replace("%2$s", formatNumber(data.credits_balance));
 					} else {
 						result.textContent = t("connected", "Connected");
 					}

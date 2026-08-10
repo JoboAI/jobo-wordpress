@@ -130,8 +130,8 @@ class Jobo_Plugin {
 				'sourcesAriaLabel'     => __( 'Sources', 'career-site-jobs' ),
 				'noMatches'            => __( 'No matches', 'career-site-jobs' ),
 				'connected'            => __( 'Connected', 'career-site-jobs' ),
-				/* translators: %s: remaining credit count. */
-				'connectedCredits'     => __( 'Connected — %s credits remaining', 'career-site-jobs' ),
+				/* translators: 1: wallet balance in dollars, 2: credit count. */
+				'connectedCredits'     => __( 'Connected — wallet balance $%1$s (%2$s credits)', 'career-site-jobs' ),
 				'connectionFailed'     => __( 'The connection test failed.', 'career-site-jobs' ),
 				/* translators: %d: HTTP status code. */
 				'requestFailed'        => __( 'The request failed (HTTP %d).', 'career-site-jobs' ),

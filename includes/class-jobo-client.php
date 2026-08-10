@@ -87,7 +87,7 @@ class Jobo_Client {
 
 	/**
 	 * Verify a key as cheaply as the API allows — page_size=1 keeps the
-	 * worst-case allowance/wallet precheck down to a single job.
+	 * worst-case included-jobs/wallet precheck down to a single job.
 	 *
 	 * @return array<string,mixed>
 	 * @throws Jobo_Api_Exception On a non-2xx response.

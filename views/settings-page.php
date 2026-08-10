@@ -172,7 +172,7 @@ if ( ! $has_key ) {
 			</div>
 			<?php if ( null !== $state['quota_remaining'] ) : ?>
 				<div class="jobo-defgrid-row">
-					<div class="jobo-defgrid-label"><?php esc_html_e( 'Shared job allowance', 'career-site-jobs' ); ?></div>
+					<div class="jobo-defgrid-label"><?php esc_html_e( 'Included jobs', 'career-site-jobs' ); ?></div>
 					<div class="jobo-defgrid-value jobo-num">
 						<?php
 						echo esc_html(
@@ -189,15 +189,15 @@ if ( ! $has_key ) {
 			<?php endif; ?>
 			<?php if ( null !== $state['credits_balance'] ) : ?>
 				<div class="jobo-defgrid-row">
-					<div class="jobo-defgrid-label"><?php esc_html_e( 'Credit balance', 'career-site-jobs' ); ?></div>
+					<div class="jobo-defgrid-label"><?php esc_html_e( 'Wallet balance', 'career-site-jobs' ); ?></div>
 					<div class="jobo-defgrid-value jobo-num">
 						<?php
 						echo esc_html(
 							sprintf(
-								/* translators: 1: credit count, 2: approximate dollar value. */
-								__( '%1$s credits (about $%2$s)', 'career-site-jobs' ),
-								$jobo_fmt( (int) $state['credits_balance'] ),
-								number_format_i18n( (int) $state['credits_balance'] / 1000, 2 )
+								/* translators: 1: dollar value, 2: credit count. */
+								__( '$%1$s (%2$s credits)', 'career-site-jobs' ),
+								number_format_i18n( (int) $state['credits_balance'] / 1000, 2 ),
+								$jobo_fmt( (int) $state['credits_balance'] )
 							)
 						);
 						?>
@@ -320,7 +320,7 @@ if ( ! $has_key ) {
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
 					<label for="jobo_expire_action"><?php esc_html_e( 'When a job closes', 'career-site-jobs' ); ?></label>
-					<p class="jobo-field-desc"><?php esc_html_e( 'Checking for closed jobs never costs credits.', 'career-site-jobs' ); ?></p>
+					<p class="jobo-field-desc"><?php esc_html_e( 'Checking for closed jobs is always free.', 'career-site-jobs' ); ?></p>
 				</div>
 				<div class="jobo-field-control">
 					<select id="jobo_expire_action" name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[expire_action]">
@@ -363,7 +363,7 @@ if ( ! $has_key ) {
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
 					<label for="jobo_batch_size"><?php esc_html_e( 'Batch limits', 'career-site-jobs' ); ?></label>
-					<p class="jobo-field-desc"><?php esc_html_e( 'These multiply into the most jobs one run will import. Jobs use your shared Job Search allowance first, then normal job pricing; direct access is $3 per 1,000 at public list price, and Jobs Feed makes Feed imports unlimited.', 'career-site-jobs' ); ?></p>
+					<p class="jobo-field-desc"><?php esc_html_e( 'These multiply into the most jobs one run will import. Imports use your Job Search plan\'s included jobs first, then the pay-as-you-go rate ($3.00 per 1,000 jobs). With Jobs Feed, Feed imports are unlimited.', 'career-site-jobs' ); ?></p>
 				</div>
 				<div class="jobo-field-control">
 					<div class="jobo-inline-controls">
@@ -383,7 +383,7 @@ if ( ! $has_key ) {
 		<section class="jobo-section">
 			<h2 class="jobo-section-title"><?php esc_html_e( 'Which jobs to import', 'career-site-jobs' ); ?></h2>
 			<p class="jobo-section-desc">
-				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing keeps your board relevant and usage predictable; shared allowance applies first, and Jobs Feed imports are unlimited.', 'career-site-jobs' ); ?>
+				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing keeps your board relevant and usage predictable; imports use your plan\'s included jobs first, and with Jobs Feed, Feed imports are unlimited.', 'career-site-jobs' ); ?>
 			</p>
 			<?php
 			// Deliberately no skills or industries fields here: the feed

@@ -52,7 +52,7 @@ class Jobo_Api_Exception extends Exception {
 	 * Whether another attempt could plausibly succeed.
 	 *
 	 * Deliberately excludes 402 and 409: metered access prechecks the requested
-	 * batch size after remaining shared allowance, so a retry fails identically,
+	 * batch size after remaining included jobs, so a retry fails identically,
 	 * and a void feed cursor can never be replayed.
 	 */
 	public function is_retryable(): bool {
