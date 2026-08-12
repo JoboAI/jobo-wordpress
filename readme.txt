@@ -35,7 +35,7 @@ Most job importers hand you a CSV or an RSS feed and leave the hard parts to you
 
 = Requirements =
 
-A Jobo API key. [Create one here](https://enterprise.jobo.world/api-keys) — the $5 free starting balance is enough to try it out. Feed imports use your Job Search plan's included jobs first, then the pay-as-you-go rate ($3.00 per 1,000 jobs); Jobs Feed makes Feed imports unlimited.
+A Jobo API key. [Create one here](https://enterprise.jobo.world/api-keys) — the $5 free starting balance is enough to try it out. Feed imports use your Job Search plan's included jobs first, then the pay-as-you-go rate ($3.00 per 1,000 jobs); The Unlimited plan drops per-job charges on Feed imports.
 
 == Installation ==
 
@@ -61,7 +61,7 @@ Updates never change the status of a listing, so if you unpublish something it s
 
 = How much does it cost? =
 
-Feed imports use your Job Search plan's included jobs first, then the pay-as-you-go rate — $3.00 per 1,000 jobs, the same rate that applies without a plan. Jobs Feed makes Feed imports unlimited. Checking for closed jobs is always free. The settings screen shows included jobs and wallet balance after every sync.
+Feed imports use your Job Search plan's included jobs first, then the pay-as-you-go rate — $3.00 per 1,000 jobs, the same rate that applies without a plan. The Unlimited plan drops per-job charges on Feed imports. Checking for closed jobs is always free. The settings screen shows included jobs and wallet balance after every sync.
 
 = Does uninstalling delete my jobs? =
 

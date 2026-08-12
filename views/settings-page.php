@@ -363,7 +363,7 @@ if ( ! $has_key ) {
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
 					<label for="jobo_batch_size"><?php esc_html_e( 'Batch limits', 'career-site-jobs' ); ?></label>
-					<p class="jobo-field-desc"><?php esc_html_e( 'These multiply into the most jobs one run will import. Imports use your Job Search plan\'s included jobs first, then the pay-as-you-go rate ($3.00 per 1,000 jobs). With Jobs Feed, Feed imports are unlimited.', 'career-site-jobs' ); ?></p>
+					<p class="jobo-field-desc"><?php esc_html_e( 'These multiply into the most jobs one run will import. Imports use your Job Search plan\'s included jobs first, then the pay-as-you-go rate ($3.00 per 1,000 jobs). With Unlimited, Feed imports have no per-job charge.', 'career-site-jobs' ); ?></p>
 				</div>
 				<div class="jobo-field-control">
 					<div class="jobo-inline-controls">
@@ -383,7 +383,7 @@ if ( ! $has_key ) {
 		<section class="jobo-section">
 			<h2 class="jobo-section-title"><?php esc_html_e( 'Which jobs to import', 'career-site-jobs' ); ?></h2>
 			<p class="jobo-section-desc">
-				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing keeps your board relevant and usage predictable; imports use your plan\'s included jobs first, and with Jobs Feed, Feed imports are unlimited.', 'career-site-jobs' ); ?>
+				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing keeps your board relevant and usage predictable; imports use your plan\'s included jobs first, and with Unlimited, Feed imports have no per-job charge.', 'career-site-jobs' ); ?>
 			</p>
 			<?php
 			// Deliberately no skills or industries fields here: the feed
