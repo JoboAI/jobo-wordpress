@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Job Board & Career Site Jobs – Jobo
  * Plugin URI:        https://jobo.world/integrations/wordpress
- * Description:       Fill your job board automatically with career site jobs from 100+ ATS platforms. Incremental sync keeps listings fresh and expires them when they close.
+ * Description:       Fill your job board automatically with career site jobs from 150+ ATS platforms. Incremental sync keeps listings fresh and expires them when they close.
  * Version:           0.1.0
  * Requires at least: 6.0
  * Requires PHP:      7.4

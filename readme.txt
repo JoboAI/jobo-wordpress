@@ -8,11 +8,11 @@ Stable tag: 0.1.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
-Fill your job board automatically from millions of live jobs across 100+ ATS platforms. Incremental sync, and listings close themselves.
+Fill your job board automatically from millions of live jobs across 150+ ATS platforms. Incremental sync, and listings close themselves.
 
 == Description ==
 
-**Job Board & Career Site Jobs** keeps a WordPress job board stocked without anyone posting jobs by hand. It pulls live listings from Jobo's index of millions of jobs — sourced directly from employer career sites and 100+ applicant tracking systems including Greenhouse, Lever, Workday, Ashby, SmartRecruiters and BambooHR — and keeps them current on a schedule.
+**Job Board & Career Site Jobs** keeps a WordPress job board stocked without anyone posting jobs by hand. It pulls live listings from Jobo's index of millions of jobs — sourced directly from employer career sites and 150+ applicant tracking systems including Greenhouse, Lever, Workday, Ashby, SmartRecruiters and BambooHR — and keeps them current on a schedule.
 
 Works with **WP Job Manager** out of the box, writing the same fields your theme already renders. No WP Job Manager? The plugin ships its own job post type, so it works on any site.
 
@@ -73,7 +73,7 @@ Start typing in the Locations or Sources fields and the plugin suggests matching
 
 = Where do the jobs come from? =
 
-Jobo's index, sourced directly from employer career sites and 100+ applicant tracking systems, including Greenhouse, Lever, Workday, Ashby, SmartRecruiters and BambooHR.
+Jobo's index, sourced directly from employer career sites and 150+ applicant tracking systems, including Greenhouse, Lever, Workday, Ashby, SmartRecruiters and BambooHR.
 
 = I'm stuck. Where do I get help? =
 
