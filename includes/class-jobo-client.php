@@ -177,9 +177,13 @@ class Jobo_Client {
 			'method'  => $method,
 			'timeout' => $this->timeout,
 			'headers' => array(
-				'X-Api-Key'  => $this->api_key,
-				'Accept'     => 'application/json',
-				'User-Agent' => 'jobo-wordpress/' . JOBO_JOBS_VERSION . '; ' . home_url( '/' ),
+				'X-Api-Key'     => $this->api_key,
+				'Accept'        => 'application/json',
+				'User-Agent'    => 'jobo-wordpress/' . JOBO_JOBS_VERSION . '; ' . home_url( '/' ),
+				// The User-Agent above is advisory; hosts and security plugins
+				// rewrite it freely. This header is the one the API tags its
+				// request metric with, and must stay on the server allowlist.
+				'X-Jobo-Client' => 'wordpress',
 			),
 		);
 
