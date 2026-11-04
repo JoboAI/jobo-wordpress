@@ -152,9 +152,13 @@ if ( ! $has_key ) {
 				<div class="jobo-defgrid-label"><?php esc_html_e( 'Scan position', 'career-site-jobs' ); ?></div>
 				<div class="jobo-defgrid-value">
 					<?php
-					echo '' === (string) $state['feed_cursor']
-						? esc_html__( 'Idle — the next run starts a fresh scan.', 'career-site-jobs' )
-						: esc_html__( 'Part-way through a scan; the next run resumes where it stopped.', 'career-site-jobs' );
+					if ( '' !== (string) $state['feed_cursor'] ) {
+						esc_html_e( 'Part-way through a scan; the next run resumes where it stopped.', 'career-site-jobs' );
+					} elseif ( '' !== (string) $state['feed_watermark'] && Jobo_Sync::filters_fingerprint( Jobo_Settings::to_feed_params() ) === (string) $state['feed_filters'] ) {
+						esc_html_e( 'Up to date — the next run fetches only jobs that are new or changed since the last scan.', 'career-site-jobs' );
+					} else {
+						esc_html_e( 'The next run imports every job that matches your filters.', 'career-site-jobs' );
+					}
 					?>
 				</div>
 			</div>
@@ -214,7 +218,7 @@ if ( ! $has_key ) {
 
 		<?php if ( $has_key ) : ?>
 			<p class="jobo-section-desc">
-				<?php esc_html_e( 'Resyncing walks the whole feed again from the start. Existing listings are matched on their Jobo job ID and updated in place, so nothing is duplicated.', 'career-site-jobs' ); ?>
+				<?php esc_html_e( 'Resyncing imports every job that matches your filters again, and each one counts toward your usage again. Regular syncs already fetch new and changed jobs, so you rarely need it. Existing listings are matched on their Jobo job ID and updated in place, so nothing is duplicated.', 'career-site-jobs' ); ?>
 			</p>
 		<?php endif; ?>
 	</section>
@@ -342,6 +346,7 @@ if ( ! $has_key ) {
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
 					<label for="jobo_sync_interval"><?php esc_html_e( 'Sync frequency', 'career-site-jobs' ); ?></label>
+					<p class="jobo-field-desc"><?php esc_html_e( 'After the first import, each sync fetches only jobs that are new or changed since the last one, so syncing more often does not bill unchanged jobs again.', 'career-site-jobs' ); ?></p>
 				</div>
 				<div class="jobo-field-control">
 					<select id="jobo_sync_interval" name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[sync_interval]">
@@ -383,7 +388,7 @@ if ( ! $has_key ) {
 		<section class="jobo-section">
 			<h2 class="jobo-section-title"><?php esc_html_e( 'Which jobs to import', 'career-site-jobs' ); ?></h2>
 			<p class="jobo-section-desc">
-				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing keeps your board relevant and usage predictable; imports use your plan\'s included jobs first, and with Unlimited, Feed imports have no per-job charge.', 'career-site-jobs' ); ?>
+				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing keeps your board relevant and usage predictable; imports use your plan\'s included jobs first, and with Unlimited, Feed imports have no per-job charge. After you change these filters, the next sync imports every matching job again.', 'career-site-jobs' ); ?>
 			</p>
 			<?php
 			// Deliberately no skills or industries fields here: the feed

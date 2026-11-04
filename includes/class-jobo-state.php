@@ -2,10 +2,11 @@
 /**
  * Persisted sync state.
  *
- * The feed cursor lives here rather than being recomputed from a relative
- * window on each run. That distinction matters: a cursor that fails to advance
- * re-imports (and re-bills) the same window on every cron tick, and it looks
- * correct while testing because the resulting listings are right.
+ * The feed cursor and watermark live here rather than being recomputed from a
+ * relative window on each run. That distinction matters: a cursor or watermark
+ * that fails to advance re-imports (and re-bills) the same jobs on every cron
+ * tick, and it looks correct while testing because the resulting listings are
+ * right.
  *
  * @package Jobo_Jobs
  */
@@ -31,6 +32,15 @@ class Jobo_State {
 				is_array( $stored ) ? $stored : array(),
 				array(
 					'feed_cursor'        => '',
+					// When the last completed pass began; '' makes the next pass a full one.
+					'feed_watermark'     => '',
+					// Fingerprint of the filters the watermark was earned under.
+					'feed_filters'       => '',
+					'pass_started_at'    => 0,
+					// Expiry recovery: a full pass is due, then a reconcile of
+					// listings last synced before that pass began.
+					'reconcile_pending'  => false,
+					'reconcile_before'   => 0,
 					'last_sync_at'       => 0,
 					'last_sync_status'   => '',
 					'last_error'         => '',
@@ -73,13 +83,26 @@ class Jobo_State {
 	}
 
 	/**
-	 * Drop the cursor so the next run starts a fresh scan.
+	 * Drop the cursor so the next run starts the pass over.
 	 *
-	 * Called when the API reports `feed_cursor_restart_required`, and by the
-	 * "Resync from scratch" admin action.
+	 * Called when the API reports `feed_cursor_restart_required`. The watermark
+	 * is kept, so the restarted pass still asks only for changed jobs.
 	 */
 	public function reset_cursor(): void {
 		$this->update( array( 'feed_cursor' => '' ) );
+	}
+
+	/**
+	 * Drop the cursor and the watermark, so the next run delivers (and bills)
+	 * every matching job again. Backs the "Resync everything" admin action.
+	 */
+	public function reset_scan(): void {
+		$this->update(
+			array(
+				'feed_cursor'    => '',
+				'feed_watermark' => '',
+			)
+		);
 	}
 
 	public function record_error( string $message ): void {

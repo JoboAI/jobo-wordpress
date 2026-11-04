@@ -159,7 +159,7 @@ class Jobo_Plugin {
 	public function handle_full_resync(): void {
 		$this->guard( self::ACTION_RESYNC );
 
-		$this->state->reset_cursor();
+		$this->state->reset_scan();
 		$summary = $this->sync->run();
 
 		$this->redirect_back(

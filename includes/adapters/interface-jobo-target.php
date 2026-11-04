@@ -50,14 +50,24 @@ interface Jobo_Target {
 	 * @return bool True when a local listing was found and acted on.
 	 */
 	public function expire( string $job_id, string $action ): bool;
+
+	/**
+	 * Jobo job ids of open listings last synced before a time: ones not yet
+	 * retired and not in the trash.
+	 *
+	 * @param int $before Unix time.
+	 * @param int $limit  Most ids to return.
+	 * @return string[]
+	 */
+	public function stale_job_ids( int $before, int $limit ): array;
 }
 
 /**
  * Shared mapping and lookup logic.
  *
  * Listings are keyed on the Jobo job id held in `_jobo_job_id`, which is what
- * makes repeated syncs idempotent — the feed's 5-minute watermark overlap
- * re-delivers jobs by design.
+ * makes repeated syncs idempotent — the sync's watermark overlap re-delivers
+ * jobs by design.
  */
 abstract class Jobo_Abstract_Target implements Jobo_Target {
 
@@ -202,6 +212,38 @@ abstract class Jobo_Abstract_Target implements Jobo_Target {
 		update_post_meta( $post_id, '_jobo_expired', 1 );
 
 		return true;
+	}
+
+	/**
+	 * @param int $before Unix time.
+	 * @param int $limit  Most ids to return.
+	 * @return string[]
+	 */
+	public function stale_job_ids( int $before, int $limit ): array {
+		global $wpdb;
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$ids = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT pm.meta_value
+				 FROM {$wpdb->postmeta} pm
+				 INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				 INNER JOIN {$wpdb->postmeta} synced ON synced.post_id = pm.post_id AND synced.meta_key = %s
+				 LEFT JOIN {$wpdb->postmeta} expired ON expired.post_id = pm.post_id AND expired.meta_key = %s
+				 WHERE pm.meta_key = %s AND p.post_type = %s AND p.post_status <> 'trash'
+				   AND expired.meta_id IS NULL AND CAST( synced.meta_value AS UNSIGNED ) < %d
+				 LIMIT %d",
+				self::META_SYNCED_AT,
+				'_jobo_expired',
+				self::META_JOB_ID,
+				$this->get_post_type(),
+				$before,
+				$limit
+			)
+		);
+		// phpcs:enable
+
+		return array_map( 'strval', (array) $ids );
 	}
 
 	/**

@@ -2,14 +2,21 @@
 /**
  * Incremental sync.
  *
- * Two passes per run:
+ * Each run:
  *
- *  1. `POST /api/jobs/feed` walked with a persisted cursor, so each run resumes
- *     where the last one stopped rather than re-scanning from the top. Jobs are
- *     upserted by Jobo job id, which makes the feed's deliberate 5-minute
- *     watermark overlap harmless.
- *  2. `GET /api/jobs/expired`, which never costs credits on any tier, to retire
- *     listings whose jobs have closed.
+ *  1. `GET /api/jobs/expired`, which never costs credits on any tier, retires
+ *     listings whose jobs have closed. It runs first so a failed import (an
+ *     empty wallet, say) never holds it up.
+ *  2. `POST /api/jobs/feed`, walked as a pass with a persisted cursor. The
+ *     first request of a pass sends `updated_after` from the watermark, the
+ *     time the last completed pass began, so once the first import is done a
+ *     pass delivers only new or changed jobs. Every delivered job is billed,
+ *     so a pass that re-read the whole feed would bill the whole board again.
+ *  3. After a recovery pass (see recover_expiry_gap()), retire the listings
+ *     that pass did not deliver.
+ *
+ * Jobs are upserted by Jobo job id, which makes the watermark overlap
+ * harmless.
  *
  * @package Jobo_Jobs
  */
@@ -30,6 +37,16 @@ class Jobo_Sync {
 
 	/** Leave headroom under max_execution_time rather than dying mid-batch. */
 	const TIME_BUDGET_SECONDS = 45;
+
+	/**
+	 * How far a pass's `updated_after` reaches back before the previous pass
+	 * began. An update can reach the feed a few minutes after its timestamp,
+	 * and a job missed here would not arrive until it changed again.
+	 */
+	const WATERMARK_OVERLAP = 15 * MINUTE_IN_SECONDS;
+
+	/** Listings a recovery reconcile retires per run, to stay inside the time budget. */
+	const RECONCILE_LIMIT = 500;
 
 	/** @var Jobo_State */
 	private $state;
@@ -84,15 +101,18 @@ class Jobo_Sync {
 		$target->prepare();
 
 		try {
-			$this->import( $client, $target, $settings, $summary );
+			$this->recover_expiry_gap( $settings );
 			$this->retire( $client, $target, $settings, $summary );
+			$this->import( $client, $target, $settings, $summary );
+			$this->reconcile( $target, $settings, $summary );
 			$this->state->clear_error();
 		} catch ( Jobo_Cursor_Restart_Exception $e ) {
-			// The held cursor is void. Drop it so the next run starts a clean
-			// scan; upserts are idempotent so nothing is duplicated.
+			// The held cursor is void. Drop it so the next run starts the pass
+			// over. The watermark is kept, so that is not a full rescan, and
+			// upserts are idempotent so nothing is duplicated.
 			$this->state->reset_cursor();
 			$summary['status']  = 'restart';
-			$summary['message'] = __( 'The feed cursor expired. A full resync will run on the next scheduled sync.', 'career-site-jobs' );
+			$summary['message'] = __( 'The feed cursor expired. The next scheduled sync starts the scan again.', 'career-site-jobs' );
 			$this->state->record_error( $summary['message'] );
 		} catch ( Jobo_Insufficient_Credits_Exception $e ) {
 			$summary['status']  = 'payment_required';
@@ -129,7 +149,8 @@ class Jobo_Sync {
 	}
 
 	/**
-	 * Walk the feed from the persisted cursor.
+	 * Walk the feed from the persisted cursor, starting a new pass when none is
+	 * held.
 	 *
 	 * @param array<string,mixed> $settings Plugin settings.
 	 * @param array<string,mixed> $summary  Run summary, mutated in place.
@@ -141,10 +162,16 @@ class Jobo_Sync {
 		$max_batches = (int) $settings['max_batches'];
 		$started     = time();
 
+		// The cursor carries the pass's filters and `updated_after`, so they
+		// are only sent on a pass's first request.
+		$since = '' === $cursor ? $this->start_pass( $params, $started ) : '';
+
 		for ( $batch = 0; $batch < $max_batches; $batch++ ) {
 			$request = $params;
 			if ( '' !== $cursor ) {
 				$request['cursor'] = $cursor;
+			} elseif ( '' !== $since ) {
+				$request['updated_after'] = $since;
 			}
 
 			$response = $client->feed( $request );
@@ -184,21 +211,155 @@ class Jobo_Sync {
 			$has_more = ! empty( $response['has_more'] );
 
 			if ( ! $has_more || '' === $next ) {
-				// Scan complete. Clearing the cursor makes the next run start a
-				// fresh pass, which is how new jobs get picked up.
-				$cursor = '';
-				break;
+				$this->finish_pass();
+				return;
 			}
 
+			// Checkpoint after every batch: these jobs are already billed, and
+			// a failure later in this run must not deliver them again.
 			$cursor = $next;
+			$this->state->update( array( 'feed_cursor' => $cursor ) );
 
 			if ( ( time() - $started ) >= self::TIME_BUDGET_SECONDS ) {
-				// Out of budget: keep the cursor so the next run resumes here.
+				// Out of budget: the next run resumes from the cursor.
 				break;
 			}
 		}
+	}
 
-		$this->state->update( array( 'feed_cursor' => $cursor ) );
+	/**
+	 * Record a new pass and decide whether it is incremental.
+	 *
+	 * A watermark only covers the filters it was earned under: after a filter
+	 * change, jobs that match the new filters but have not changed lately would
+	 * never arrive, so the pass is a full one. The watermark is dropped here,
+	 * not when the pass ends, so a restarted pass stays full too.
+	 *
+	 * @param array<string,mixed> $params Feed request body.
+	 * @return string `updated_after` for the first request, or '' for a full pass.
+	 */
+	private function start_pass( array $params, int $now ): string {
+		$filters   = self::filters_fingerprint( $params );
+		$watermark = (string) $this->state->get( 'feed_watermark', '' );
+
+		if ( $filters !== (string) $this->state->get( 'feed_filters', '' ) ) {
+			$watermark = '';
+		}
+
+		$this->state->update(
+			array(
+				'feed_watermark'  => $watermark,
+				'feed_filters'    => $filters,
+				'pass_started_at' => $now,
+			)
+		);
+
+		return self::updated_after( $watermark );
+	}
+
+	/**
+	 * The scan is complete: the next pass asks only for jobs changed since this
+	 * one began.
+	 */
+	private function finish_pass(): void {
+		$started = (int) $this->state->get( 'pass_started_at', 0 );
+		$changes = array(
+			'feed_cursor'    => '',
+			// 0 means a pass carried over from before the watermark existed.
+			// Its start is unknown, so the next pass is a full one.
+			'feed_watermark' => $started > 0 ? gmdate( 'c', $started ) : '',
+		);
+
+		if ( $this->state->get( 'reconcile_pending' ) ) {
+			$changes['reconcile_pending'] = false;
+			$changes['reconcile_before']  = $started;
+		}
+
+		$this->state->update( $changes );
+	}
+
+	/**
+	 * Stable fingerprint of the filters a pass runs under. `batch_size` is
+	 * left out: it changes how a pass is paged, not which jobs it delivers.
+	 *
+	 * @param array<string,mixed> $params Feed request body.
+	 */
+	public static function filters_fingerprint( array $params ): string {
+		unset( $params['batch_size'] );
+		ksort( $params );
+
+		return md5( (string) wp_json_encode( $params ) );
+	}
+
+	/**
+	 * `updated_after` for a pass, given the watermark the last completed pass
+	 * left. Empty when there is none, which makes the pass a full one.
+	 */
+	public static function updated_after( string $watermark ): string {
+		$parsed = '' === $watermark ? false : strtotime( $watermark );
+
+		return false === $parsed ? '' : gmdate( 'c', $parsed - self::WATERMARK_OVERLAP );
+	}
+
+	/**
+	 * Recover a site whose sync stalled for longer than the expiry lookback.
+	 *
+	 * `GET /api/jobs/expired` reaches back 7 days at most, so closures older
+	 * than that are gone for good. One full pass, followed by reconcile(),
+	 * retires the listings it did not deliver instead. Skipped while a recovery
+	 * is already under way, so a run that keeps failing cannot restart the
+	 * pass (and re-bill it) every time.
+	 *
+	 * @param array<string,mixed> $settings Plugin settings.
+	 */
+	private function recover_expiry_gap( array $settings ): void {
+		if ( 'keep' === $settings['expire_action'] || $this->state->get( 'reconcile_pending' ) ) {
+			return;
+		}
+
+		$stored = strtotime( (string) $this->state->get( 'expired_since', '' ) );
+		if ( false === $stored || $stored >= time() - self::MAX_EXPIRED_LOOKBACK ) {
+			return;
+		}
+
+		$this->state->update(
+			array(
+				'feed_cursor'       => '',
+				'feed_watermark'    => '',
+				'reconcile_pending' => true,
+			)
+		);
+	}
+
+	/**
+	 * After a recovery pass, retire the listings it did not deliver: their jobs
+	 * closed while the sync was stalled, or no longer match the filters.
+	 *
+	 * Later passes only move a listing's sync time forward, so "last synced
+	 * before the recovery pass began" stays true of exactly those listings
+	 * while this works through them over several runs.
+	 *
+	 * @param array<string,mixed> $settings Plugin settings.
+	 * @param array<string,mixed> $summary  Run summary, mutated in place.
+	 */
+	private function reconcile( Jobo_Target $target, array $settings, array &$summary ): void {
+		$before = (int) $this->state->get( 'reconcile_before', 0 );
+		if ( $before <= 0 || 'keep' === $settings['expire_action'] ) {
+			return;
+		}
+
+		$ids = $target->stale_job_ids( $before, self::RECONCILE_LIMIT );
+		$target->prime_lookup( $ids );
+
+		foreach ( $ids as $job_id ) {
+			if ( $target->expire( $job_id, (string) $settings['expire_action'] ) ) {
+				$summary['expired']++;
+			}
+		}
+
+		if ( count( $ids ) < self::RECONCILE_LIMIT ) {
+			$this->state->update( array( 'reconcile_before' => 0 ) );
+		}
 	}
 
 	/**
@@ -250,8 +411,8 @@ class Jobo_Sync {
 	/**
 	 * Timestamp for the expiry pass, clamped inside the API's 7-day window.
 	 *
-	 * A site whose cron has been dormant for over a week will have missed some
-	 * expirations; a manual full resync is the recovery path.
+	 * A site whose cron has been dormant for longer will have missed some
+	 * expirations; recover_expiry_gap() catches those up.
 	 */
 	private function expired_since(): string {
 		$stored = (string) $this->state->get( 'expired_since', '' );

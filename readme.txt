@@ -20,7 +20,7 @@ Works with **WP Job Manager** out of the box, writing the same fields your theme
 
 Most job importers hand you a CSV or an RSS feed and leave the hard parts to you. This one is built around the two things that actually keep a board healthy:
 
-* **Incremental sync.** Each run resumes from a stored cursor instead of re-scanning from the top, so syncs stay fast as your board grows and you are not billed repeatedly for jobs you already have.
+* **Incremental sync.** After the first import, each sync fetches only jobs that are new or have changed since the last one, so syncs stay fast as your board grows and syncing hourly does not bill unchanged jobs again.
 * **Jobs close themselves.** Jobo tracks when a listing disappears from the employer's careers page and tells your site, so you are not advertising roles that were filled weeks ago. This check is always free.
 
 = Features =
@@ -61,7 +61,7 @@ Updates never change the status of a listing, so if you unpublish something it s
 
 = How much does it cost? =
 
-Feed imports use your Job Search plan's included jobs first, then the pay-as-you-go rate — $3.00 per 1,000 jobs, the same rate that applies without a plan. The Unlimited plan drops per-job charges on Feed imports. Checking for closed jobs is always free. The settings screen shows included jobs and wallet balance after every sync.
+Feed imports use your Job Search plan's included jobs first, then the pay-as-you-go rate — $3.00 per 1,000 jobs, the same rate that applies without a plan. The Unlimited plan drops per-job charges on Feed imports. The first sync imports every job that matches your filters; after that, each sync imports only jobs that are new or have changed. Changing your filters, or clicking **Resync everything**, imports every matching job again. Checking for closed jobs is always free. The settings screen shows included jobs and wallet balance after every sync.
 
 = Does uninstalling delete my jobs? =
 
