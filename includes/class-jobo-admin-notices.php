@@ -46,7 +46,7 @@ class Jobo_Admin_Notices {
 					/* translators: 1: settings page URL, 2: Jobo dashboard URL. */
 					__( '<a href="%1$s">Review your Jobo settings</a> or <a href="%2$s" target="_blank" rel="noopener">check your balance and API key</a>.', 'career-site-jobs' ),
 					esc_url( $settings_url ),
-					'https://enterprise.jobo.world/api-keys'
+					'https://enterprise.jobo.world/api-keys?src=wordpress'
 				)
 			)
 		);

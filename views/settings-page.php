@@ -115,7 +115,7 @@ if ( ! $has_key ) {
 							),
 						)
 					),
-					'https://enterprise.jobo.world/api-keys'
+					'https://enterprise.jobo.world/api-keys?src=wordpress'
 				);
 				?>
 			</p>
@@ -247,7 +247,7 @@ if ( ! $has_key ) {
 									),
 								)
 							),
-							'https://enterprise.jobo.world/api-keys'
+							'https://enterprise.jobo.world/api-keys?src=wordpress'
 						);
 						?>
 					</p>
