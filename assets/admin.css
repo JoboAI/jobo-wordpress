@@ -272,6 +272,7 @@ body.settings_page_career-site-jobs #wpbody-content {
 .jobo-admin input[type="email"],
 .jobo-admin input[type="url"],
 .jobo-admin input[type="search"],
+.jobo-admin input[type="date"],
 .jobo-admin select,
 .jobo-admin textarea {
 	box-sizing: border-box;
@@ -299,6 +300,7 @@ body.settings_page_career-site-jobs #wpbody-content {
 .jobo-admin input[type="email"]:hover,
 .jobo-admin input[type="url"]:hover,
 .jobo-admin input[type="search"]:hover,
+.jobo-admin input[type="date"]:hover,
 .jobo-admin select:hover,
 .jobo-admin textarea:hover {
 	border-color: var(--jobo-ink-500);
@@ -312,6 +314,7 @@ body.settings_page_career-site-jobs #wpbody-content {
 .jobo-admin input[type="email"]:focus,
 .jobo-admin input[type="url"]:focus,
 .jobo-admin input[type="search"]:focus,
+.jobo-admin input[type="date"]:focus,
 .jobo-admin select:focus,
 .jobo-admin textarea:focus {
 	border-color: var(--jobo-ring);
@@ -640,4 +643,32 @@ body.settings_page_career-site-jobs #wpbody-content {
 	.jobo-admin textarea {
 		min-height: 40px;
 	}
+}
+
+/* ── Collapsible filter groups (company filters, excludes) ──────────────── */
+
+.jobo-details {
+	margin: 8px 0 0;
+	border-top: 1px solid var(--jobo-ink-100);
+}
+
+.jobo-details > summary {
+	padding: 16px 0;
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--jobo-ink-950);
+	cursor: pointer;
+}
+
+.jobo-details > summary .jobo-field-desc {
+	display: block;
+	font-weight: 400;
+}
+
+.jobo-inline-check {
+	display: inline-flex;
+	align-items: center;
+	margin-top: 10px;
+	font-size: 14px;
+	color: var(--jobo-ink-800);
 }

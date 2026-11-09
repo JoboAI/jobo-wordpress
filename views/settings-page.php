@@ -391,10 +391,78 @@ if ( ! $has_key ) {
 				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing keeps your board relevant and usage predictable; imports use your plan\'s included jobs first, and with Unlimited, Feed imports have no per-job charge. After you change these filters, the next sync imports every matching job again.', 'career-site-jobs' ); ?>
 			</p>
 			<?php
-			// Deliberately no skills or industries fields here: the feed
-			// endpoint only accepts the keys listed in feed_filter_keys
-			// (JOB_FEED_FILTER_KEYS) in Jobo.Connectors/contracts/filters.json
-			// — skills and industries are search-only filters.
+			// Every field here maps onto a key in feed_filter_keys
+			// (JOB_FEED_FILTER_KEYS) in Jobo.Connectors/contracts/filters.json.
+			// Deliberately no skills field: skills is a search-only filter.
+
+			/**
+			 * One picker row: a combobox mount that admin.js fills
+			 * (data-jobo-picker names the option source), the hidden input
+			 * that actually submits (a JSON list, so values may hold commas),
+			 * and a comma-separated text field for the no-JS path.
+			 */
+			$jobo_picker_row = static function ( string $key, string $label, string $desc, string $kind, string $placeholder, bool $labelled = false ) use ( $settings ): void {
+				$jobo_saved   = (array) ( $settings[ $key ] ?? array() );
+				$jobo_name    = Jobo_Settings::OPTION_NAME . '[' . $key . ']';
+				$jobo_plain   = $labelled ? Jobo_Settings::labelled_values( $jobo_saved ) : $jobo_saved;
+				$jobo_id      = 'jobo_' . $key;
+				$jobo_labelid = $jobo_id . '_label';
+				?>
+				<div class="jobo-field-row">
+					<div class="jobo-field-label">
+						<span class="jobo-field-name" id="<?php echo esc_attr( $jobo_labelid ); ?>"><?php echo esc_html( $label ); ?></span>
+						<?php if ( '' !== $desc ) : ?>
+							<p class="jobo-field-desc"><?php echo esc_html( $desc ); ?></p>
+						<?php endif; ?>
+					</div>
+					<div class="jobo-field-control">
+						<div class="jobo-cb-mount"
+							data-jobo-picker="<?php echo esc_attr( $kind ); ?>"
+							data-jobo-input="<?php echo esc_attr( $jobo_id ); ?>"
+							data-jobo-label="<?php echo esc_attr( $label ); ?>"
+							data-jobo-placeholder="<?php echo esc_attr( $placeholder ); ?>"></div>
+						<input type="hidden" id="<?php echo esc_attr( $jobo_id ); ?>"
+							name="<?php echo esc_attr( $jobo_name ); ?>"
+							value="<?php echo esc_attr( (string) wp_json_encode( array_values( $jobo_saved ) ) ); ?>" />
+						<noscript>
+							<input type="text" class="jobo-input--mono" style="width:100%;max-width:640px"
+								name="<?php echo esc_attr( $jobo_name ); ?>"
+								value="<?php echo esc_attr( implode( ', ', $jobo_plain ) ); ?>" />
+							<p class="jobo-field-desc"><?php esc_html_e( 'Comma-separated values.', 'career-site-jobs' ); ?></p>
+						</noscript>
+					</div>
+				</div>
+				<?php
+			};
+
+			/** One row of checkboxes over a closed vocabulary. */
+			$jobo_checkbox_row = static function ( string $key, string $label, array $options, string $desc = '' ) use ( $settings ): void {
+				$jobo_selected = (array) ( $settings[ $key ] ?? array() );
+				?>
+				<div class="jobo-field-row">
+					<div class="jobo-field-label">
+						<span class="jobo-field-name"><?php echo esc_html( $label ); ?></span>
+						<?php if ( '' !== $desc ) : ?>
+							<p class="jobo-field-desc"><?php echo esc_html( $desc ); ?></p>
+						<?php endif; ?>
+					</div>
+					<div class="jobo-field-control">
+						<fieldset class="jobo-checkbox-group">
+							<legend class="screen-reader-text"><?php echo esc_html( $label ); ?></legend>
+							<?php foreach ( $options as $jobo_option ) : ?>
+								<label>
+									<input type="checkbox"
+										name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME . '[' . $key . '][]' ); ?>"
+										value="<?php echo esc_attr( $jobo_option ); ?>"
+										<?php checked( in_array( $jobo_option, $jobo_selected, true ) ); ?> />
+									<?php echo esc_html( $jobo_option ); ?>
+								</label>
+							<?php endforeach; ?>
+						</fieldset>
+					</div>
+				</div>
+				<?php
+			};
 			?>
 
 			<div class="jobo-field-row">
@@ -446,35 +514,96 @@ if ( ! $has_key ) {
 			</div>
 
 			<?php
-			$jobo_checkbox_groups = array(
-				'work_models'       => array( __( 'Work model', 'career-site-jobs' ), Jobo_Settings::WORK_MODELS ),
-				'employment_types'  => array( __( 'Employment type', 'career-site-jobs' ), Jobo_Settings::EMPLOYMENT_TYPES ),
-				'experience_levels' => array( __( 'Experience level', 'career-site-jobs' ), Jobo_Settings::EXPERIENCE_LEVELS ),
-			);
-			foreach ( $jobo_checkbox_groups as $jobo_key => $jobo_group ) :
-				list( $jobo_label, $jobo_options ) = $jobo_group;
-				$jobo_selected                     = (array) $settings[ $jobo_key ];
+			$jobo_picker_row( 'companies', __( 'Companies', 'career-site-jobs' ), __( 'Only jobs at these companies. Start typing a name or website domain; a picked company covers all of its careers boards.', 'career-site-jobs' ), 'companies', __( 'Type a company name or domain, for example stripe', 'career-site-jobs' ), true );
+			$jobo_picker_row( 'occupation_ids', __( 'Occupations', 'career-site-jobs' ), __( 'Only jobs classified as these roles, for example Registered Nurse.', 'career-site-jobs' ), 'occupations', __( 'Type a role, for example nurse', 'career-site-jobs' ), true );
+			$jobo_picker_row( 'job_categories', __( 'Job categories', 'career-site-jobs' ), __( 'Broad occupation groups, for example Healthcare.', 'career-site-jobs' ), 'facet:job_categories', __( 'Type to filter categories', 'career-site-jobs' ) );
+			$jobo_picker_row( 'job_subcategories', __( 'Job subcategories', 'career-site-jobs' ), __( 'Narrower groups, for example Nursing.', 'career-site-jobs' ), 'facet:job_subcategories', __( 'Type to filter subcategories', 'career-site-jobs' ) );
+			$jobo_picker_row( 'languages', __( 'Languages', 'career-site-jobs' ), __( 'The language a job is written in. Leave blank for all.', 'career-site-jobs' ), 'static:languages', __( 'Type a language, for example German', 'career-site-jobs' ) );
+
+			$jobo_checkbox_row( 'work_models', __( 'Work model', 'career-site-jobs' ), Jobo_Settings::WORK_MODELS );
+			$jobo_checkbox_row( 'employment_types', __( 'Employment type', 'career-site-jobs' ), Jobo_Settings::EMPLOYMENT_TYPES );
+			$jobo_checkbox_row( 'experience_levels', __( 'Experience level', 'career-site-jobs' ), Jobo_Settings::EXPERIENCE_LEVELS );
+			?>
+
+			<div class="jobo-field-row">
+				<div class="jobo-field-label">
+					<label for="jobo_posted_after"><?php esc_html_e( 'Posted on or after', 'career-site-jobs' ); ?></label>
+					<p class="jobo-field-desc"><?php esc_html_e( 'Leave out jobs posted before this date. Leave blank for all.', 'career-site-jobs' ); ?></p>
+				</div>
+				<div class="jobo-field-control">
+					<input type="date" id="jobo_posted_after"
+						name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[posted_after]"
+						value="<?php echo esc_attr( (string) $settings['posted_after'] ); ?>" />
+					<br />
+					<label class="jobo-inline-check">
+						<input type="checkbox" name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[include_reactivated]" value="1" <?php checked( ! empty( $settings['include_reactivated'] ) ); ?> />
+						<?php esc_html_e( 'Also import older jobs that reopened after this date', 'career-site-jobs' ); ?>
+					</label>
+				</div>
+			</div>
+
+			<details class="jobo-details" <?php echo ( ! empty( $settings['industries'] ) || ! empty( $settings['company_primary_industries'] ) || ! empty( $settings['company_categories'] ) || ! empty( $settings['company_sizes'] ) || ! empty( $settings['company_revenues'] ) || '' !== $settings['company_is_agency'] ) ? 'open' : ''; ?>>
+				<summary><?php esc_html_e( 'Company filters', 'career-site-jobs' ); ?></summary>
+				<?php
+				$jobo_picker_row( 'industries', __( 'Industries', 'career-site-jobs' ), __( 'Jobs at companies in any of these industries.', 'career-site-jobs' ), 'facet:industries', __( 'Type to filter industries', 'career-site-jobs' ) );
+				$jobo_picker_row( 'company_primary_industries', __( 'Primary industry', 'career-site-jobs' ), __( 'Jobs at companies whose main industry is one of these.', 'career-site-jobs' ), 'facet:industries', __( 'Type to filter industries', 'career-site-jobs' ) );
+				$jobo_checkbox_row( 'company_categories', __( 'Business model', 'career-site-jobs' ), Jobo_Settings::COMPANY_CATEGORIES );
+				$jobo_checkbox_row( 'company_sizes', __( 'Company size (employees)', 'career-site-jobs' ), Jobo_Settings::COMPANY_SIZES, __( 'Companies of unknown size are left out.', 'career-site-jobs' ) );
+				$jobo_checkbox_row( 'company_revenues', __( 'Annual revenue (USD)', 'career-site-jobs' ), Jobo_Settings::COMPANY_REVENUES, __( 'Companies of unknown revenue are left out.', 'career-site-jobs' ) );
 				?>
 				<div class="jobo-field-row">
 					<div class="jobo-field-label">
-						<span class="jobo-field-name"><?php echo esc_html( $jobo_label ); ?></span>
+						<label for="jobo_company_is_agency"><?php esc_html_e( 'Staffing agencies', 'career-site-jobs' ); ?></label>
+						<p class="jobo-field-desc"><?php esc_html_e( 'Jobs that recruitment and staffing agencies post for other employers.', 'career-site-jobs' ); ?></p>
 					</div>
 					<div class="jobo-field-control">
-						<fieldset class="jobo-checkbox-group">
-							<legend class="screen-reader-text"><?php echo esc_html( $jobo_label ); ?></legend>
-							<?php foreach ( $jobo_options as $jobo_option ) : ?>
-								<label>
-									<input type="checkbox"
-										name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME . '[' . $jobo_key . '][]' ); ?>"
-										value="<?php echo esc_attr( $jobo_option ); ?>"
-										<?php checked( in_array( $jobo_option, $jobo_selected, true ) ); ?> />
-									<?php echo esc_html( $jobo_option ); ?>
-								</label>
+						<select id="jobo_company_is_agency" name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[company_is_agency]">
+							<?php
+							foreach ( array(
+								''     => __( 'Include them', 'career-site-jobs' ),
+								'none' => __( 'Leave them out', 'career-site-jobs' ),
+								'only' => __( 'Only agency jobs', 'career-site-jobs' ),
+							) as $jobo_value => $jobo_label ) :
+								?>
+								<option value="<?php echo esc_attr( $jobo_value ); ?>" <?php selected( $settings['company_is_agency'], $jobo_value ); ?>>
+									<?php echo esc_html( $jobo_label ); ?>
+								</option>
 							<?php endforeach; ?>
-						</fieldset>
+						</select>
 					</div>
 				</div>
-			<?php endforeach; ?>
+			</details>
+
+			<?php
+			$jobo_has_excludes = false;
+			foreach ( array_merge( Jobo_Settings::TEXT_LISTS, Jobo_Settings::LABELLED_LISTS, array_keys( Jobo_Settings::choice_lists() ) ) as $jobo_key ) {
+				if ( 0 === strpos( $jobo_key, 'exclude_' ) && ! empty( $settings[ $jobo_key ] ) ) {
+					$jobo_has_excludes = true;
+				}
+			}
+			?>
+			<details class="jobo-details" <?php echo $jobo_has_excludes ? 'open' : ''; ?>>
+				<summary>
+					<?php esc_html_e( 'Exclude', 'career-site-jobs' ); ?>
+					<span class="jobo-field-desc"><?php esc_html_e( 'Leave out jobs that match any of these, whatever the filters above include.', 'career-site-jobs' ); ?></span>
+				</summary>
+				<?php
+				$jobo_picker_row( 'exclude_companies', __( 'Companies', 'career-site-jobs' ), '', 'companies', __( 'Type a company name or domain', 'career-site-jobs' ), true );
+				$jobo_picker_row( 'exclude_occupation_ids', __( 'Occupations', 'career-site-jobs' ), '', 'occupations', __( 'Type a role', 'career-site-jobs' ), true );
+				$jobo_picker_row( 'exclude_job_categories', __( 'Job categories', 'career-site-jobs' ), '', 'facet:job_categories', __( 'Type to filter categories', 'career-site-jobs' ) );
+				$jobo_picker_row( 'exclude_job_subcategories', __( 'Job subcategories', 'career-site-jobs' ), '', 'facet:job_subcategories', __( 'Type to filter subcategories', 'career-site-jobs' ) );
+				$jobo_picker_row( 'exclude_industries', __( 'Industries', 'career-site-jobs' ), '', 'facet:industries', __( 'Type to filter industries', 'career-site-jobs' ) );
+				$jobo_picker_row( 'exclude_company_primary_industries', __( 'Primary industry', 'career-site-jobs' ), '', 'facet:industries', __( 'Type to filter industries', 'career-site-jobs' ) );
+				$jobo_picker_row( 'exclude_sources', __( 'Sources', 'career-site-jobs' ), '', 'sources', __( 'Type to filter sources', 'career-site-jobs' ) );
+				$jobo_picker_row( 'exclude_languages', __( 'Languages', 'career-site-jobs' ), '', 'static:languages', __( 'Type a language', 'career-site-jobs' ) );
+				$jobo_checkbox_row( 'exclude_work_models', __( 'Work model', 'career-site-jobs' ), Jobo_Settings::WORK_MODELS );
+				$jobo_checkbox_row( 'exclude_employment_types', __( 'Employment type', 'career-site-jobs' ), Jobo_Settings::EMPLOYMENT_TYPES );
+				$jobo_checkbox_row( 'exclude_experience_levels', __( 'Experience level', 'career-site-jobs' ), Jobo_Settings::EXPERIENCE_LEVELS );
+				$jobo_checkbox_row( 'exclude_company_categories', __( 'Business model', 'career-site-jobs' ), Jobo_Settings::COMPANY_CATEGORIES );
+				$jobo_checkbox_row( 'exclude_company_sizes', __( 'Company size (employees)', 'career-site-jobs' ), Jobo_Settings::COMPANY_SIZES );
+				$jobo_checkbox_row( 'exclude_company_revenues', __( 'Annual revenue (USD)', 'career-site-jobs' ), Jobo_Settings::COMPANY_REVENUES );
+				?>
+			</details>
 		</section>
 
 		<p>

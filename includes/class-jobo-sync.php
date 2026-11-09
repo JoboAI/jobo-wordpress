@@ -279,13 +279,15 @@ class Jobo_Sync {
 	}
 
 	/**
-	 * Stable fingerprint of the filters a pass runs under. `batch_size` is
-	 * left out: it changes how a pass is paged, not which jobs it delivers.
+	 * Stable fingerprint of the filters a pass runs under. `batch_size` and
+	 * `description_format` are left out: they change how a pass is paged and
+	 * rendered, not which jobs it delivers — and a change here resets the
+	 * watermark, which re-imports (and re-bills) every matching job.
 	 *
 	 * @param array<string,mixed> $params Feed request body.
 	 */
 	public static function filters_fingerprint( array $params ): string {
-		unset( $params['batch_size'] );
+		unset( $params['batch_size'], $params['description_format'] );
 		ksort( $params );
 
 		return md5( (string) wp_json_encode( $params ) );

@@ -4,7 +4,7 @@ Tags: job board, job listings, career site, jobs, recruitment
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -25,7 +25,9 @@ Most job importers hand you a CSV or an RSS feed and leave the hard parts to you
 
 = Features =
 
-* Filter by location, ATS source, work model, employment type and experience level
+* Filter by location, company, occupation, job category, language, ATS source, work model, employment type, experience level and posting date
+* Company filters: industry, business model, size, revenue, and staffing agencies in or out
+* Exclude companies, occupations, categories, industries, sources and more
 * Import as published, draft or pending review
 * Choose what happens when a job closes — draft it, trash it, or leave it up
 * Company name, website, logo, location, salary and apply URL mapped automatically
@@ -69,7 +71,7 @@ No. Uninstalling removes the plugin's settings and sync state only. Imported lis
 
 = How do the filter suggestions work? =
 
-Start typing in the Locations or Sources fields and the plugin suggests matching values as you go — locations resolve through Jobo's location lookup, and sources are pulled live from the current job index, so you always pick a value the API actually recognises instead of guessing at spelling. If JavaScript is off, the plain text fields still work; the suggestions are a convenience on top of them, not a requirement.
+Start typing in a filter field and the plugin suggests matching values as you go — locations resolve through Jobo's location lookup, companies through Jobo's company directory (a picked company covers all of its careers boards), occupations come from Jobo's occupation taxonomy, and sources, industries and job categories are pulled live from the current job index, so you always pick a value the API actually recognises instead of guessing at spelling. If JavaScript is off, the plain text fields still work; the suggestions are a convenience on top of them, not a requirement.
 
 = Where do the jobs come from? =
 
@@ -87,10 +89,19 @@ Email [support@jobo.world](mailto:support@jobo.world), or check the full setup g
 
 == Changelog ==
 
+= 0.2.0 =
+* New filters: companies (with company search), occupations, job categories and subcategories, languages, industries, primary industry, business model, company size, annual revenue, staffing agencies, and a posted-after date.
+* New Exclude section: leave out companies, occupations, categories, industries, sources, languages and more.
+* Job descriptions are imported as HTML instead of Markdown, so they render formatted.
+* Existing settings keep working unchanged, and upgrading does not trigger a full re-import.
+
 = 0.1.0 =
 * Initial release.
 
 == Upgrade Notice ==
+
+= 0.2.0 =
+Adds company, occupation, category, language and company filters plus excludes. Your current filters and sync position are kept.
 
 = 0.1.0 =
 Initial release.

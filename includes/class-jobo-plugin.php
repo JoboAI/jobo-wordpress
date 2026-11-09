@@ -123,6 +123,16 @@ class Jobo_Plugin {
 			),
 			'savedLocations' => $location_lines,
 			'savedSources'   => array_values( (array) $settings['sources'] ),
+			'languages'      => array_map(
+				static function ( $code, $name ) {
+					return array(
+						'code' => $code,
+						'name' => $name,
+					);
+				},
+				array_keys( Jobo_Settings::LANGUAGES ),
+				array_values( Jobo_Settings::LANGUAGES )
+			),
 			'i18n'           => array(
 				'locationsPlaceholder' => __( 'Search for a city, region or country', 'career-site-jobs' ),
 				'locationsAriaLabel'   => __( 'Locations', 'career-site-jobs' ),

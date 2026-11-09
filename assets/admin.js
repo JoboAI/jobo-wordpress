@@ -1,6 +1,8 @@
 /**
  * Settings-screen behaviour: the locations and sources comboboxes, the
- * connection test, and the client-side key format check.
+ * generic filter pickers (companies, occupations, categories, industries,
+ * languages and their excludes), the connection test, and the client-side
+ * key format check.
  *
  * Plain ES2019, no modules and no build step. Depends on combobox.js
  * (createJoboCombobox) and reads its configuration from the global `joboAdmin`
@@ -157,6 +159,44 @@
 		});
 	}
 
+	/* ── Shared option loads ────────────────────────────────────────────── */
+
+	var filterOptionsPromise = null;
+
+	/** One-shot jobo_filter_options load shared by every picker that needs it. */
+	function filterOptions() {
+		if (!filterOptionsPromise) {
+			filterOptionsPromise = ajaxPost("jobo_filter_options", {});
+			// Mark handled so a failed load never surfaces as an unhandled
+			// rejection — the pickers fall back to free-text chips.
+			filterOptionsPromise.catch(function () {});
+		}
+		return filterOptionsPromise;
+	}
+
+	var occupationsPromise = null;
+
+	/** The flattened occupation taxonomy, loaded on first use. */
+	function occupations() {
+		if (!occupationsPromise) {
+			occupationsPromise = ajaxPost("jobo_occupations", {}).then(function (data) {
+				return data && Array.isArray(data.occupations) ? data.occupations : [];
+			});
+			occupationsPromise.catch(function () {});
+		}
+		return occupationsPromise;
+	}
+
+	/** Substring filter over preloaded {label, value, count?} items. */
+	function filterItems(items, query, max) {
+		var needle = query.toLowerCase();
+		return items
+			.filter(function (item) {
+				return String(item.label).toLowerCase().indexOf(needle) !== -1;
+			})
+			.slice(0, max || 20);
+	}
+
 	/* ── Sources combobox ───────────────────────────────────────────────── */
 
 	function mountSources() {
@@ -167,11 +207,9 @@
 		}
 
 		// One-shot options load; every keystroke filters locally.
-		var sourcesPromise = ajaxPost("jobo_filter_options", {}).then(function (data) {
+		var sourcesPromise = filterOptions().then(function (data) {
 			return data && Array.isArray(data.sources) ? data.sources : [];
 		});
-		// Mark handled so a failed load never surfaces as an unhandled
-		// rejection — the combobox falls back to free-text chips.
 		sourcesPromise.catch(function () {});
 
 		var saved = Array.isArray(joboAdmin.savedSources) ? joboAdmin.savedSources : [];
@@ -214,6 +252,162 @@
 					})
 					.join(",");
 			},
+		});
+	}
+
+	/* ── Generic pickers (data-jobo-picker) ─────────────────────────────── */
+
+	/**
+	 * Option source per picker kind. Each returns a function from query to
+	 * a promise of {label, value, values?, count?} items, plus whether typed
+	 * text may be committed as is.
+	 *   companies          per-keystroke suggest; a pick carries every board id
+	 *   occupations        taxonomy loaded once, filtered locally; picks only
+	 *   facet:<name>       jobo_filter_options list, filtered locally
+	 *   sources            the same load's source keys
+	 *   static:languages   joboAdmin.languages
+	 */
+	function pickerSource(kind) {
+		if (kind === "companies") {
+			return {
+				freeText: true,
+				minChars: 2,
+				fetch: function (query) {
+					return ajaxPost("jobo_suggest_companies", { q: query }).then(function (data) {
+						var items = data && Array.isArray(data.suggestions) ? data.suggestions : [];
+						return items.map(function (item) {
+							return { label: item.label, value: item.values.join(","), values: item.values, count: item.count };
+						});
+					});
+				},
+			};
+		}
+		if (kind === "occupations") {
+			return {
+				freeText: false,
+				minChars: 2,
+				fetch: function (query) {
+					return occupations().then(function (items) {
+						return filterItems(items, query, 25);
+					});
+				},
+			};
+		}
+		if (kind === "sources") {
+			return {
+				freeText: true,
+				minChars: 1,
+				fetch: function (query) {
+					return filterOptions().then(function (data) {
+						var keys = data && Array.isArray(data.sources) ? data.sources : [];
+						return filterItems(
+							keys.map(function (key) {
+								return { label: key, value: key };
+							}),
+							query
+						);
+					});
+				},
+			};
+		}
+		if (kind === "static:languages") {
+			var languages = (joboAdmin.languages || []).map(function (language) {
+				return { label: language.name + " (" + language.code + ")", value: language.code };
+			});
+			return {
+				freeText: false,
+				minChars: 1,
+				fetch: function (query) {
+					return Promise.resolve(filterItems(languages, query, 40));
+				},
+			};
+		}
+		if (kind.indexOf("facet:") === 0) {
+			var facet = kind.slice("facet:".length);
+			return {
+				// Names are matched case-insensitively server-side, so a typed
+				// value works when the options could not load.
+				freeText: true,
+				minChars: 1,
+				fetch: function (query) {
+					return filterOptions().then(function (data) {
+						return filterItems(data && Array.isArray(data[facet]) ? data[facet] : [], query, 40);
+					});
+				},
+			};
+		}
+		return null;
+	}
+
+	/**
+	 * Saved value → chips. Labelled lists hold {label, values}; plain lists
+	 * hold strings, labelled from the static vocabulary where there is one.
+	 */
+	function initialChips(saved, kind) {
+		var names = {};
+		if (kind === "static:languages") {
+			(joboAdmin.languages || []).forEach(function (language) {
+				names[language.code] = language.name + " (" + language.code + ")";
+			});
+		}
+		return (Array.isArray(saved) ? saved : [])
+			.map(function (entry) {
+				if (entry && typeof entry === "object" && Array.isArray(entry.values)) {
+					return { label: entry.label || entry.values.join(", "), value: entry.values.join(","), values: entry.values };
+				}
+				if (typeof entry === "string" && entry !== "") {
+					return { label: names[entry] || entry, value: entry };
+				}
+				return null;
+			})
+			.filter(Boolean);
+	}
+
+	function mountPickers() {
+		var mounts = document.querySelectorAll("[data-jobo-picker]");
+		Array.prototype.forEach.call(mounts, function (mount) {
+			var hidden = document.getElementById(mount.getAttribute("data-jobo-input"));
+			var kind = mount.getAttribute("data-jobo-picker");
+			var source = pickerSource(kind);
+			if (!hidden || !source) {
+				return;
+			}
+
+			var saved = [];
+			try {
+				saved = JSON.parse(hidden.value || "[]");
+			} catch (e) {
+				saved = [];
+			}
+			var labelled = kind === "companies" || kind === "occupations";
+
+			createJoboCombobox(mount, {
+				multi: true,
+				allowFreeText: source.freeText,
+				minChars: source.minChars,
+				debounceMs: kind === "companies" ? 250 : 100,
+				placeholder: mount.getAttribute("data-jobo-placeholder") || "",
+				ariaLabel: mount.getAttribute("data-jobo-label") || kind,
+				noMatchesText: t("noMatches", "No matches"),
+				initialValues: initialChips(saved, kind),
+				fetchSuggestions: function (query) {
+					return source.fetch(query).catch(function () {
+						// Endpoint down: no suggestions; free text still works where allowed.
+						return [];
+					});
+				},
+				onChange: function (values) {
+					hidden.value = JSON.stringify(
+						values.map(function (v) {
+							if (!labelled) {
+								return v.value;
+							}
+							// A typed domain or name has no ids: it is its own value.
+							return { label: v.label, values: Array.isArray(v.values) ? v.values : [v.value] };
+						})
+					);
+				},
+			});
 		});
 	}
 
@@ -312,6 +506,7 @@
 	function init() {
 		mountLocations();
 		mountSources();
+		mountPickers();
 		wireConnection();
 	}
 

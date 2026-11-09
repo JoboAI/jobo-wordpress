@@ -111,6 +111,58 @@ class Jobo_Client {
 	}
 
 	/**
+	 * Values of one dynamic filter, with live job counts: industries, skills,
+	 * sources, company_categories, job_categories, job_subcategories or
+	 * occupations. The occupation facets answer 404 until occupations are
+	 * published. Free on every tier.
+	 *
+	 * Shape: {facet, options:[{key,count,name?,parent?}]}.
+	 *
+	 * @param string $facet Facet name.
+	 * @param int    $limit Maximum values (1-250).
+	 * @return array<string,mixed>
+	 * @throws Jobo_Api_Exception On a non-2xx response.
+	 */
+	public function filter_option_values( string $facet, int $limit = 250 ): array {
+		return $this->request( 'GET', '/api/connectors/filter-options/' . rawurlencode( $facet ), array( 'limit' => $limit ) );
+	}
+
+	/**
+	 * Company typeahead: companies whose name or website domain starts with
+	 * `$q`, each with every careers-board id (`ids`) a `companies` filter
+	 * should carry. Free on every tier.
+	 *
+	 * Shape: {suggestions:[{id,ids,name,domain,logo_url,country,job_count}]}.
+	 *
+	 * @param string $q     Partial company name or domain (2+ characters).
+	 * @param int    $limit Maximum companies (1-20).
+	 * @return array<string,mixed>
+	 * @throws Jobo_Api_Exception On a non-2xx response.
+	 */
+	public function suggest_companies( string $q, int $limit = 8 ): array {
+		return $this->request(
+			'GET',
+			'/api/connectors/companies/suggest',
+			array(
+				'q'     => $q,
+				'limit' => $limit,
+			)
+		);
+	}
+
+	/**
+	 * The occupation taxonomy: categories › subcategories › occupations, with
+	 * the ids `occupation_ids` takes. 404 until occupations are published.
+	 * Free on every tier.
+	 *
+	 * @return array<string,mixed>
+	 * @throws Jobo_Api_Exception On a non-2xx response.
+	 */
+	public function occupations(): array {
+		return $this->request( 'GET', '/api/occupations' );
+	}
+
+	/**
 	 * Location autocomplete backing the settings screen. Free on every tier.
 	 *
 	 * Shape: {suggestions:[{display_name,city,region,country,...}]}.
