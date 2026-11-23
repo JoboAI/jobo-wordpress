@@ -4,7 +4,7 @@ Tags: job board, job listings, career site, jobs, recruitment
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -37,13 +37,13 @@ Most job importers hand you a CSV or an RSS feed and leave the hard parts to you
 
 = Requirements =
 
-A Jobo API key. [Create one here](https://enterprise.jobo.world/api-keys?src=wordpress) — the $5 free starting balance is enough to try it out. Feed imports use your Job Search plan's included jobs first, then the pay-as-you-go rate ($3.00 per 1,000 jobs); The Unlimited plan drops per-job charges on Feed imports.
+A Jobo account. Sign in with Jobo from the plugin's settings, or paste an API key you [create here](https://enterprise.jobo.world/api-keys?src=wordpress). The $5 free starting balance is enough to try it out. Feed imports use your Job Search plan's included jobs first, then the pay-as-you-go rate ($3.00 per 1,000 jobs); The Unlimited plan drops per-job charges on Feed imports.
 
 == Installation ==
 
 1. Install and activate the plugin.
 2. Go to **Settings → Jobo Jobs**.
-3. Paste your Jobo API key.
+3. Click **Sign in with Jobo**, sign in, and approve the connection. Jobo's approval screen lists your site as an unverified app with your site address, which is expected for a WordPress site. Signing in needs a site served over HTTPS; otherwise, or if you prefer, choose **Use an API key instead** and paste a key.
 4. Pick the locations and filters you want. Start typing in the Locations or Sources fields and choose from the suggestions — no need to know the exact spelling or ATS slug. Leave everything blank to import all jobs.
 5. Click **Sync now**, or wait for the first scheduled run.
 
@@ -81,6 +81,26 @@ Jobo's index, sourced directly from employer career sites and 200+ applicant tra
 
 Email [support@jobo.world](mailto:support@jobo.world), or check the full setup guide at [jobo.world/docs/connectors/wordpress](https://jobo.world/docs/connectors/wordpress).
 
+== External services ==
+
+This plugin connects to Jobo (https://jobo.world), the service the jobs come from. It cannot import jobs without it.
+
+= The Jobo API (connect.jobo.world) =
+
+Used to import jobs, close listings that are no longer open, check the connection, and suggest values in the filter fields. Requests are made on each scheduled sync, when you click **Sync now** or **Test connection**, and as you type in a filter field.
+
+Each request sends your Jobo API key and the filters you saved (locations, sources, companies and the other settings on the plugin's page). No data about your site's visitors is sent.
+
+= Jobo sign-in (enterprise.jobo.world) =
+
+Used only when you click **Sign in with Jobo**. The first time, the plugin registers your site with Jobo by sending a name made from your site's address ("WordPress – example.com") and the address of the plugin's sign-in page on your site. Your browser is then sent to Jobo to sign in and approve the connection, and the plugin exchanges the code Jobo returns for an API key, which it saves in your site's database. The plugin also stores the email address of the Jobo account you signed in with, to show who is connected.
+
+When you click **Disconnect**, or delete the plugin while signed in, the plugin sends that API key back to Jobo so it is revoked.
+
+If you paste an API key and never click **Sign in with Jobo**, the plugin does not contact this address.
+
+Jobo's [terms of service](https://jobo.world/terms) and [privacy policy](https://jobo.world/privacy) apply to both.
+
 == Screenshots ==
 
 1. The Jobo Jobs settings screen, showing connection status.
@@ -88,6 +108,11 @@ Email [support@jobo.world](mailto:support@jobo.world), or check the full setup g
 3. The sync status panel — wallet balance and import history.
 
 == Changelog ==
+
+= 0.3.0 =
+* New: Sign in with Jobo. Connect the site by signing in to your Jobo account and approving the connection; there is no API key to create or paste. Needs a site served over HTTPS.
+* Pasting an API key still works, under **Use an API key instead**. A site already connected with a key keeps working with no action.
+* The settings screen shows which account the site is connected as, with a **Disconnect** button. Disconnecting, or deleting the plugin, revokes the key the site was given.
 
 = 0.2.0 =
 * New filters: companies (with company search), occupations, job categories and subcategories, languages, industries, primary industry, business model, company size, annual revenue, staffing agencies, and a posted-after date.
@@ -99,6 +124,9 @@ Email [support@jobo.world](mailto:support@jobo.world), or check the full setup g
 * Initial release.
 
 == Upgrade Notice ==
+
+= 0.3.0 =
+Adds Sign in with Jobo. Your saved API key, filters and sync position are kept.
 
 = 0.2.0 =
 Adds company, occupation, category, language and company filters plus excludes. Your current filters and sync position are kept.

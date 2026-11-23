@@ -523,6 +523,16 @@ body.settings_page_career-site-jobs #wpbody-content {
 	cursor: default;
 }
 
+/* ── Signed-in account ──────────────────────────────────────────────────── */
+
+.jobo-account {
+	margin: 0 0 12px;
+	font-size: 14px;
+	line-height: 1.5;
+	color: var(--jobo-ink-800);
+	overflow-wrap: anywhere;
+}
+
 /* ── Test connection ────────────────────────────────────────────────────── */
 
 .jobo-key-row {

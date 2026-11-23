@@ -3,7 +3,7 @@
  * Plugin Name:       Job Board & Career Site Jobs – Jobo
  * Plugin URI:        https://jobo.world/integrations/wordpress
  * Description:       Fill your job board automatically with career site jobs from 200+ ATS platforms. Incremental sync keeps listings fresh and expires them when they close.
- * Version:           0.2.0
+ * Version:           0.3.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Jobo
@@ -19,7 +19,7 @@ declare( strict_types = 1 );
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'JOBO_JOBS_VERSION', '0.2.0' );
+define( 'JOBO_JOBS_VERSION', '0.3.0' );
 define( 'JOBO_JOBS_FILE', __FILE__ );
 define( 'JOBO_JOBS_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -27,6 +27,7 @@ require_once JOBO_JOBS_DIR . 'includes/class-jobo-api-exception.php';
 require_once JOBO_JOBS_DIR . 'includes/class-jobo-client.php';
 require_once JOBO_JOBS_DIR . 'includes/class-jobo-state.php';
 require_once JOBO_JOBS_DIR . 'includes/class-jobo-settings.php';
+require_once JOBO_JOBS_DIR . 'includes/class-jobo-oauth.php';
 require_once JOBO_JOBS_DIR . 'includes/adapters/interface-jobo-target.php';
 require_once JOBO_JOBS_DIR . 'includes/adapters/class-jobo-wpjm-target.php';
 require_once JOBO_JOBS_DIR . 'includes/adapters/class-jobo-cpt-target.php';

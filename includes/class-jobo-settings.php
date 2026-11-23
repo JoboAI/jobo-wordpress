@@ -98,6 +98,9 @@ class Jobo_Settings {
 	 */
 	const LABELLED_LISTS = array( 'companies', 'exclude_companies', 'occupation_ids', 'exclude_occupation_ids' );
 
+	/** @var bool Set while clear_api_key() saves, so sanitize() lets the key go. */
+	private static $clearing_key = false;
+
 	/**
 	 * Closed-vocabulary list settings and the values each allows.
 	 *
@@ -169,6 +172,43 @@ class Jobo_Settings {
 		return array_key_exists( $key, $settings ) ? $settings[ $key ] : $default;
 	}
 
+	/**
+	 * Save an API key the way the settings form does: into the same option,
+	 * through the same sanitize() callback. "Sign in with Jobo" stores the key
+	 * it is issued with this, so a key from a sign-in and a pasted key are
+	 * validated, stored and used identically.
+	 *
+	 * @param string $api_key The key to save.
+	 * @return bool Whether it is now the saved key.
+	 */
+	public static function save_api_key( string $api_key ): bool {
+		$api_key = trim( $api_key );
+		if ( ! Jobo_Client::is_valid_key_format( $api_key ) ) {
+			return false;
+		}
+
+		$settings            = self::get();
+		$settings['api_key'] = $api_key;
+		update_option( self::OPTION_NAME, $settings );
+
+		// Read back rather than trust update_option(), which also answers
+		// false when the key was already the saved one.
+		return (string) self::value( 'api_key', '' ) === $api_key;
+	}
+
+	/**
+	 * Forget the saved key, leaving every other setting as it is. The form
+	 * cannot do this: sanitize() reads an empty key field as "keep the key".
+	 */
+	public static function clear_api_key(): void {
+		$settings            = self::get();
+		$settings['api_key'] = '';
+
+		self::$clearing_key = true;
+		update_option( self::OPTION_NAME, $settings );
+		self::$clearing_key = false;
+	}
+
 	public function register(): void {
 		register_setting(
 			self::OPTION_GROUP,
@@ -192,8 +232,10 @@ class Jobo_Settings {
 
 		$submitted_key = isset( $input['api_key'] ) ? trim( sanitize_text_field( $input['api_key'] ) ) : '';
 
-		// An all-asterisk value means the masked field was left untouched.
-		if ( '' === $submitted_key || preg_match( '/^\*+$/', $submitted_key ) ) {
+		if ( self::$clearing_key ) {
+			$clean['api_key'] = '';
+		} elseif ( '' === $submitted_key || preg_match( '/^\*+$/', $submitted_key ) ) {
+			// An all-asterisk value means the masked field was left untouched.
 			$clean['api_key'] = $existing['api_key'];
 		} elseif ( Jobo_Client::is_valid_key_format( $submitted_key ) ) {
 			$clean['api_key'] = $submitted_key;

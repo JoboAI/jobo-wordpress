@@ -40,6 +40,7 @@ class Jobo_Plugin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
 		Jobo_Ajax::register();
+		Jobo_OAuth::register();
 
 		add_action( Jobo_Sync::CRON_HOOK, array( $this, 'run_scheduled_sync' ) );
 		add_action( 'admin_post_' . self::ACTION_SYNC_NOW, array( $this, 'handle_sync_now' ) );
@@ -213,6 +214,11 @@ class Jobo_Plugin {
 		$state    = $this->state->all();
 		$target   = $this->sync->resolve_target();
 		$has_key  = '' !== $settings['api_key'];
+
+		// Whether sign-in is offered, whether the saved key came from one, and
+		// the message of a sign-in that just failed.
+		$connection   = Jobo_OAuth::status();
+		$signin_error = Jobo_OAuth::take_notice( get_current_user_id() );
 
 		require JOBO_JOBS_DIR . 'views/settings-page.php';
 	}

@@ -72,7 +72,7 @@ class Jobo_Ajax {
 		$api_key = (string) Jobo_Settings::value( 'api_key', '' );
 		if ( '' === $api_key ) {
 			wp_send_json_error(
-				array( 'message' => __( 'Save an API key first, then the source list can load.', 'career-site-jobs' ) ),
+				array( 'message' => __( 'Connect this site to Jobo first, then the source list can load.', 'career-site-jobs' ) ),
 				400
 			);
 		}

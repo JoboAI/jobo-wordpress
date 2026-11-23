@@ -10,10 +10,12 @@
  *
  * @package Jobo_Jobs
  *
- * @var array<string,mixed> $settings Current settings.
- * @var array<string,mixed> $state    Persisted sync state.
- * @var Jobo_Target         $target   Target that will actually be written.
- * @var bool                $has_key  Whether an API key is configured.
+ * @var array<string,mixed> $settings     Current settings.
+ * @var array<string,mixed> $state        Persisted sync state.
+ * @var Jobo_Target         $target       Target that will actually be written.
+ * @var bool                $has_key      Whether an API key is configured.
+ * @var array<string,mixed> $connection   Jobo_OAuth::status(): available, signed_in, email.
+ * @var string              $signin_error Why a sign-in just failed, or ''.
  */
 
 declare( strict_types = 1 );
@@ -45,6 +47,29 @@ if ( ! $has_key ) {
 } else {
 	$jobo_badge_class = 'jobo-badge--success';
 	$jobo_badge_text  = __( 'Connected', 'career-site-jobs' );
+}
+
+$jobo_signed_in     = ! empty( $connection['signed_in'] );
+$jobo_can_sign_in   = ! empty( $connection['available'] );
+$jobo_account_email = (string) ( $connection['email'] ?? '' );
+$jobo_api_keys_url  = 'https://enterprise.jobo.world/api-keys?src=wordpress';
+$jobo_allowed_link  = array(
+	'a' => array(
+		'href'   => array(),
+		'target' => array(),
+		'rel'    => array(),
+	),
+);
+
+// The key field folds away behind "Use an API key instead" while signing in is
+// the way to connect and no key is saved. It stays open after a rejected paste,
+// so the field the admin just used is still in front of them.
+$jobo_key_folded = $jobo_can_sign_in && ! $has_key;
+$jobo_key_open   = false;
+foreach ( get_settings_errors( Jobo_Settings::OPTION_NAME ) as $jobo_settings_error ) {
+	if ( 'jobo_invalid_key' === $jobo_settings_error['code'] ) {
+		$jobo_key_open = true;
+	}
 }
 ?>
 <div class="wrap jobo-admin">
@@ -97,26 +122,71 @@ if ( ! $has_key ) {
 		<div class="jobo-banner jobo-banner--critical">
 			<p><?php esc_html_e( 'The sync did not complete. See the details below.', 'career-site-jobs' ); ?></p>
 		</div>
-	<?php endif; ?>
-
-	<?php if ( ! $has_key ) : ?>
+	<?php elseif ( 'connected' === $jobo_result && $jobo_signed_in ) : ?>
+		<div class="jobo-banner jobo-banner--success">
+			<p>
+				<?php
+				if ( '' !== $jobo_account_email ) {
+					printf(
+						/* translators: %s: email address of the Jobo account. */
+						esc_html__( 'Signed in. This site is connected to Jobo as %s.', 'career-site-jobs' ),
+						esc_html( $jobo_account_email )
+					);
+				} else {
+					esc_html_e( 'Signed in. This site is connected to Jobo.', 'career-site-jobs' );
+				}
+				?>
+			</p>
+		</div>
+	<?php elseif ( 'disconnected' === $jobo_result && ! $has_key ) : ?>
 		<div class="jobo-banner jobo-banner--neutral">
+			<p><?php esc_html_e( 'Disconnected. The key this site held has been revoked, and the app is removed from your Jobo dashboard.', 'career-site-jobs' ); ?></p>
+		</div>
+	<?php elseif ( 'disconnected_here' === $jobo_result && ! $has_key ) : ?>
+		<div class="jobo-banner jobo-banner--warning">
 			<p>
 				<?php
 				printf(
 					wp_kses(
 						/* translators: %s: Jobo API keys URL. */
-						__( 'Add your Jobo API key below to start importing jobs. <a href="%s" target="_blank" rel="noopener">Create a key</a> — it takes about a minute.', 'career-site-jobs' ),
-						array(
-							'a' => array(
-								'href'   => array(),
-								'target' => array(),
-								'rel'    => array(),
-							),
-						)
+						__( 'Disconnected. This site no longer holds the key, but Jobo could not be reached to revoke it. To finish, disconnect the app under <a href="%s" target="_blank" rel="noopener">Developers → API Keys</a> in your Jobo dashboard.', 'career-site-jobs' ),
+						$jobo_allowed_link
 					),
-					'https://enterprise.jobo.world/api-keys?src=wordpress'
+					esc_url( $jobo_api_keys_url )
 				);
+				?>
+			</p>
+		</div>
+	<?php elseif ( 'signin_failed' === $jobo_result ) : ?>
+		<div class="jobo-banner jobo-banner--critical">
+			<p>
+				<?php
+				if ( '' !== $signin_error ) {
+					echo esc_html( $signin_error );
+				} else {
+					esc_html_e( 'The sign-in did not complete. Start again, or use an API key instead.', 'career-site-jobs' );
+				}
+				?>
+			</p>
+		</div>
+	<?php endif; ?>
+
+	<?php if ( ! $has_key && '' === $jobo_result ) : ?>
+		<div class="jobo-banner jobo-banner--neutral">
+			<p>
+				<?php
+				if ( $jobo_can_sign_in ) {
+					esc_html_e( 'Sign in with Jobo below to start importing jobs. You can paste an API key instead.', 'career-site-jobs' );
+				} else {
+					printf(
+						wp_kses(
+							/* translators: %s: Jobo API keys URL. */
+							__( 'Add your Jobo API key below to start importing jobs. <a href="%s" target="_blank" rel="noopener">Create a key</a> — it takes about a minute.', 'career-site-jobs' ),
+							$jobo_allowed_link
+						),
+						esc_url( $jobo_api_keys_url )
+					);
+				}
 				?>
 			</p>
 		</div>
@@ -223,54 +293,148 @@ if ( ! $has_key ) {
 		<?php endif; ?>
 	</section>
 
+	<?php
+	// The sign-in and disconnect buttons sit inside the settings form below,
+	// which cannot hold a second form. Each button submits one of these by its
+	// `form` attribute instead, so it posts its own action and nonce and none
+	// of the settings fields.
+	?>
+	<?php if ( $jobo_signed_in ) : ?>
+		<form id="jobo-oauth-disconnect" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<input type="hidden" name="action" value="<?php echo esc_attr( Jobo_OAuth::ACTION_DISCONNECT ); ?>" />
+			<?php wp_nonce_field( Jobo_OAuth::ACTION_DISCONNECT ); ?>
+		</form>
+	<?php elseif ( $jobo_can_sign_in ) : ?>
+		<form id="jobo-oauth-start" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+			<input type="hidden" name="action" value="<?php echo esc_attr( Jobo_OAuth::ACTION_START ); ?>" />
+			<?php wp_nonce_field( Jobo_OAuth::ACTION_START ); ?>
+		</form>
+	<?php endif; ?>
+
 	<form method="post" action="options.php">
 		<?php settings_fields( Jobo_Settings::OPTION_GROUP ); ?>
 
 		<section class="jobo-section">
 			<h2 class="jobo-section-title"><?php esc_html_e( 'Connection', 'career-site-jobs' ); ?></h2>
 
-			<div class="jobo-field-row">
-				<div class="jobo-field-label">
-					<label for="jobo_api_key"><?php esc_html_e( 'API key', 'career-site-jobs' ); ?></label>
-					<p class="jobo-field-desc">
-						<?php
-						printf(
-							wp_kses(
-								/* translators: %s: Jobo API keys URL. */
-								__( 'Starts with <code>jbe_live_</code>. <a href="%s" target="_blank" rel="noopener">Get one from the API keys page on enterprise.jobo.world</a>. Leave the masked value untouched to keep the current key.', 'career-site-jobs' ),
-								array(
-									'code' => array(),
-									'a'    => array(
-										'href'   => array(),
-										'target' => array(),
-										'rel'    => array(),
-									),
-								)
-							),
-							'https://enterprise.jobo.world/api-keys?src=wordpress'
-						);
-						?>
-					</p>
-				</div>
-				<div class="jobo-field-control">
-					<div class="jobo-key-row">
-						<input
-							type="password"
-							id="jobo_api_key"
-							class="jobo-key-input jobo-input--mono"
-							name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[api_key]"
-							value="<?php echo $has_key ? esc_attr( str_repeat( '*', 24 ) ) : ''; ?>"
-							autocomplete="off"
-						/>
-						<button type="button" id="jobo-test-connection" class="jobo-btn jobo-btn--secondary"><?php esc_html_e( 'Test connection', 'career-site-jobs' ); ?></button>
-						<span id="jobo-test-spinner" class="jobo-spinner" hidden aria-hidden="true"></span>
+			<?php
+			/** The API key field with its connection test, as a pasted key has always used it. */
+			$jobo_key_row = static function () use ( $has_key ): void {
+				?>
+				<div class="jobo-field-row">
+					<div class="jobo-field-label">
+						<label for="jobo_api_key"><?php esc_html_e( 'API key', 'career-site-jobs' ); ?></label>
+						<p class="jobo-field-desc">
+							<?php
+							printf(
+								wp_kses(
+									/* translators: %s: Jobo API keys URL. */
+									__( 'Starts with <code>jbe_live_</code>. <a href="%s" target="_blank" rel="noopener">Get one from the API keys page on enterprise.jobo.world</a>. Leave the masked value untouched to keep the current key.', 'career-site-jobs' ),
+									array(
+										'code' => array(),
+										'a'    => array(
+											'href'   => array(),
+											'target' => array(),
+											'rel'    => array(),
+										),
+									)
+								),
+								'https://enterprise.jobo.world/api-keys?src=wordpress'
+							);
+							?>
+						</p>
 					</div>
-					<p id="jobo-key-format-help" class="jobo-help jobo-help--critical" hidden>
-						<?php esc_html_e( 'That does not look like a Jobo API key. Keys begin with jbe_live_ or jbe_test_ and are 74 characters long.', 'career-site-jobs' ); ?>
-					</p>
-					<p id="jobo-test-result" class="jobo-test-result" hidden aria-live="polite"></p>
+					<div class="jobo-field-control">
+						<div class="jobo-key-row">
+							<input
+								type="password"
+								id="jobo_api_key"
+								class="jobo-key-input jobo-input--mono"
+								name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[api_key]"
+								value="<?php echo $has_key ? esc_attr( str_repeat( '*', 24 ) ) : ''; ?>"
+								autocomplete="off"
+							/>
+							<button type="button" id="jobo-test-connection" class="jobo-btn jobo-btn--secondary"><?php esc_html_e( 'Test connection', 'career-site-jobs' ); ?></button>
+							<span id="jobo-test-spinner" class="jobo-spinner" hidden aria-hidden="true"></span>
+						</div>
+						<p id="jobo-key-format-help" class="jobo-help jobo-help--critical" hidden>
+							<?php esc_html_e( 'That does not look like a Jobo API key. Keys begin with jbe_live_ or jbe_test_ and are 74 characters long.', 'career-site-jobs' ); ?>
+						</p>
+						<p id="jobo-test-result" class="jobo-test-result" hidden aria-live="polite"></p>
+					</div>
 				</div>
-			</div>
+				<?php
+			};
+
+			/** The "Sign in with Jobo" row. Primary while nothing is connected, secondary beside a saved key. */
+			$jobo_sign_in_row = static function () use ( $has_key ): void {
+				?>
+				<div class="jobo-field-row">
+					<div class="jobo-field-label">
+						<span class="jobo-field-name"><?php esc_html_e( 'Jobo account', 'career-site-jobs' ); ?></span>
+						<p class="jobo-field-desc">
+							<?php
+							esc_html_e( 'Sign in and approve the connection, and Jobo issues this site its own API key. The approval screen lists this site as an unverified app with your site address, which is expected for a WordPress site.', 'career-site-jobs' );
+							if ( $has_key ) {
+								echo ' ';
+								esc_html_e( 'Signing in replaces the API key saved here.', 'career-site-jobs' );
+							}
+							?>
+						</p>
+					</div>
+					<div class="jobo-field-control">
+						<button type="submit" form="jobo-oauth-start" class="jobo-btn <?php echo $has_key ? 'jobo-btn--secondary' : 'jobo-btn--primary'; ?>"><?php esc_html_e( 'Sign in with Jobo', 'career-site-jobs' ); ?></button>
+					</div>
+				</div>
+				<?php
+			};
+			?>
+
+			<?php if ( $jobo_signed_in ) : ?>
+				<div class="jobo-field-row">
+					<div class="jobo-field-label">
+						<span class="jobo-field-name"><?php esc_html_e( 'Jobo account', 'career-site-jobs' ); ?></span>
+						<p class="jobo-field-desc"><?php esc_html_e( 'This site imports jobs with the account you signed in with. To switch accounts or use an API key, disconnect first.', 'career-site-jobs' ); ?></p>
+					</div>
+					<div class="jobo-field-control">
+						<p class="jobo-account">
+							<?php
+							if ( '' !== $jobo_account_email ) {
+								printf(
+									/* translators: %s: email address of the connected Jobo account. */
+									esc_html__( 'Connected as %s', 'career-site-jobs' ),
+									'<strong>' . esc_html( $jobo_account_email ) . '</strong>'
+								);
+							} else {
+								esc_html_e( 'Connected', 'career-site-jobs' );
+							}
+							?>
+						</p>
+						<div class="jobo-key-row">
+							<button type="button" id="jobo-test-connection" class="jobo-btn jobo-btn--secondary"><?php esc_html_e( 'Test connection', 'career-site-jobs' ); ?></button>
+							<button type="submit" form="jobo-oauth-disconnect" class="jobo-btn jobo-btn--subtle"><?php esc_html_e( 'Disconnect', 'career-site-jobs' ); ?></button>
+							<span id="jobo-test-spinner" class="jobo-spinner" hidden aria-hidden="true"></span>
+						</div>
+						<p id="jobo-test-result" class="jobo-test-result" hidden aria-live="polite"></p>
+					</div>
+				</div>
+			<?php elseif ( $jobo_key_folded ) : ?>
+				<?php $jobo_sign_in_row(); ?>
+				<details class="jobo-details" <?php echo $jobo_key_open ? 'open' : ''; ?>>
+					<summary><?php esc_html_e( 'Use an API key instead', 'career-site-jobs' ); ?></summary>
+					<?php $jobo_key_row(); ?>
+				</details>
+			<?php else : ?>
+				<?php if ( ! $jobo_can_sign_in ) : ?>
+					<p class="jobo-section-desc"><?php esc_html_e( 'Sign in with Jobo needs a site served over HTTPS, so this site connects with an API key.', 'career-site-jobs' ); ?></p>
+				<?php endif; ?>
+				<?php $jobo_key_row(); ?>
+				<?php
+				if ( $jobo_can_sign_in ) {
+					$jobo_sign_in_row();
+				}
+				?>
+			<?php endif; ?>
 		</section>
 
 		<section class="jobo-section">
