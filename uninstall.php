@@ -2,8 +2,9 @@
 /**
  * Uninstall cleanup.
  *
- * Removes plugin settings, sync state and what "Sign in with Jobo" stored (the
- * site's OAuth client id and the connected account). A key the site was given
+ * Removes plugin settings, sync state, the run lock, the settings pickers'
+ * cached options and what "Sign in with Jobo" stored (the site's OAuth client
+ * id and the connected account). A key the site was given
  * by signing in is handed back to Jobo first, so deleting the plugin does not
  * leave a live key behind. Imported listings are deliberately left in place —
  * they are the site's content, and silently deleting a job board on uninstall
@@ -48,9 +49,13 @@ delete_option( 'jobo_jobs_settings' );
 delete_option( 'jobo_jobs_state' );
 delete_option( 'jobo_jobs_oauth_client' );
 delete_option( 'jobo_jobs_oauth_account' );
+delete_option( 'jobo_jobs_sync_lock' );
 
-// The cached lookup lists behind the settings screen's filter fields.
+// The cached lookup lists behind the settings screen's filter fields
+// (Jobo_Ajax::FILTER_OPTIONS_TRANSIENT and OCCUPATIONS_TRANSIENT), and the
+// filter-options cache's first version.
 delete_transient( 'jobo_filter_options_v2' );
+delete_transient( 'jobo_filter_options' );
 delete_transient( 'jobo_occupations' );
 
 wp_clear_scheduled_hook( 'jobo_jobs_sync' );

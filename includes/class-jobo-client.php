@@ -38,6 +38,11 @@ class Jobo_Client {
 	/** @var array<string,mixed> Usage figures from the most recent response. */
 	private $last_usage = array();
 
+	/**
+	 * The defaults suit the interactive admin calls (pickers, connection
+	 * test). The sync passes its own: the feed can take up to 90 seconds to
+	 * answer a page, so it asks for a longer timeout and fewer attempts.
+	 */
 	public function __construct( string $api_key, string $base_url = self::DEFAULT_BASE_URL, int $timeout = 30, int $max_attempts = 3 ) {
 		$this->api_key      = trim( $api_key );
 		$this->base_url     = untrailingslashit( $base_url );
@@ -352,6 +357,10 @@ class Jobo_Client {
 		};
 
 		return array(
+			// Feed pages: how many of the page's jobs were billed (ones this
+			// account was not delivered in the last 30 days). Absent where no
+			// per-job charge applies.
+			'jobs_billed'       => $read( 'x-jobs-billed' ),
 			'credits_deducted'  => $read( 'x-credits-deducted' ),
 			'credits_balance'   => $read( 'x-credits-balance' ),
 			'quota_limit'       => $read( 'x-quota-limit' ),

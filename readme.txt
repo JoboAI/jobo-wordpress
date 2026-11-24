@@ -4,7 +4,7 @@ Tags: job board, job listings, career site, jobs, recruitment
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.3.1
+Stable tag: 0.4.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -14,13 +14,13 @@ Fill your job board automatically from millions of live jobs across 200+ ATS pla
 
 **Job Board & Career Site Jobs** keeps a WordPress job board stocked without anyone posting jobs by hand. It pulls live listings from Jobo's index of millions of jobs — sourced directly from employer career sites and 200+ applicant tracking systems including Greenhouse, Lever, Workday, Ashby, SmartRecruiters and BambooHR — and keeps them current on a schedule.
 
-Works with **WP Job Manager** out of the box, writing the same fields your theme already renders. No WP Job Manager? The plugin ships its own job post type, so it works on any site.
+Works with **WP Job Manager** out of the box, writing the same fields your theme already renders. No WP Job Manager? The plugin ships its own job post type, with an apply link and JobPosting structured data on each listing, so it works on any site.
 
 = Why this is different from a generic importer =
 
 Most job importers hand you a CSV or an RSS feed and leave the hard parts to you. This one is built around the two things that actually keep a board healthy:
 
-* **Incremental sync.** After the first import, each sync fetches only jobs that are new or have changed since the last one, so syncs stay fast as your board grows and syncing hourly does not bill unchanged jobs again.
+* **Incremental sync.** After the first import, each sync fetches only jobs that are new or have changed since the last one, so syncs stay fast as your board grows. A job is billed once per 30 days.
 * **Jobs close themselves.** Jobo tracks when a listing disappears from the employer's careers page and tells your site, so you are not advertising roles that were filled weeks ago. This check is always free.
 
 = Features =
@@ -45,7 +45,7 @@ A Jobo account. Sign in with Jobo from the plugin's settings, or paste an API ke
 2. Go to **Settings → Jobo Jobs**.
 3. Click **Sign in with Jobo**, sign in, and approve the connection. Jobo's approval screen lists your site as an unverified app with your site address, which is expected for a WordPress site. Signing in needs a site served over HTTPS; otherwise, or if you prefer, choose **Use an API key instead** and paste a key.
 4. Pick the locations and filters you want. Start typing in the Locations or Sources fields and choose from the suggestions — no need to know the exact spelling or ATS slug. Leave everything blank to import all jobs.
-5. Click **Sync now**, or wait for the first scheduled run.
+5. Tick **Sync automatically** and save. Nothing is imported on a schedule until you do; **Sync now** imports straight away.
 
 == Frequently Asked Questions ==
 
@@ -59,11 +59,11 @@ No. Every listing is matched on its Jobo job ID, so repeated syncs update in pla
 
 = What happens to jobs I have edited by hand? =
 
-Updates never change the status of a listing, so if you unpublish something it stays unpublished. Title, description and metadata are refreshed from the source.
+Updates never change the status of a listing, so if you unpublish something it stays unpublished. Title, description and metadata are refreshed from the source. The exception: a listing the plugin retired when its job closed gets its status back if the job reopens.
 
 = How much does it cost? =
 
-Feed imports use your Job Search plan's included jobs first, then the pay-as-you-go rate — $3.00 per 1,000 jobs, the same rate that applies without a plan. The Unlimited plan drops per-job charges on Feed imports. The first sync imports every job that matches your filters; after that, each sync imports only jobs that are new or have changed. Changing your filters, or clicking **Resync everything**, imports every matching job again. Checking for closed jobs is always free. The settings screen shows included jobs and wallet balance after every sync.
+Feed imports use your Job Search plan's included jobs first, then the pay-as-you-go rate — $3.00 per 1,000 jobs, the same rate that applies without a plan. The Unlimited plan drops per-job charges on Feed imports. A job is billed once per 30 days: receiving it again in that time is free. The first sync, a filter change and **Resync everything** import every matching job; other syncs import only new or changed jobs. Checking for closed jobs is always free. The settings screen shows included jobs, wallet balance and what the last sync billed.
 
 = Does uninstalling delete my jobs? =
 
@@ -107,6 +107,14 @@ Jobo's [terms of service](https://jobo.world/terms) and [privacy policy](https:/
 
 == Changelog ==
 
+= 0.4.0 =
+* New: **Scheduled sync** switch, off on a new site so nothing is imported before you choose filters. A site that has synced keeps syncing.
+* New: built-in Jobs listings show company, location, salary and an apply link, and carry JobPosting structured data.
+* A job that reopens gets its listing back.
+* A filter change takes effect on the next sync, and listings that no longer match are retired.
+* Fixed: city-only locations, closures missed on busy days, overlapping syncs, slow feed pages timing out.
+* Status shows what the last sync billed.
+
 = 0.3.1 =
 * Fixed: text typed in a filter field reaches Jobo as typed. A company search with &, + or # (AT&T) was cut short.
 * Fixed: the check for closed jobs sends its start time correctly encoded.
@@ -115,26 +123,17 @@ Jobo's [terms of service](https://jobo.world/terms) and [privacy policy](https:/
 * External services now lists what each request carries and where company logos load from.
 
 = 0.3.0 =
-* New: Sign in with Jobo. Connect the site by signing in to your Jobo account and approving the connection; there is no API key to create or paste. Needs a site served over HTTPS.
-* Pasting an API key still works, under **Use an API key instead**. A site already connected with a key keeps working with no action.
-* The settings screen shows which account the site is connected as, with a **Disconnect** button. Disconnecting, or deleting the plugin, revokes the key the site was given.
+* New: Sign in with Jobo. Approve the connection in your Jobo account; there is no API key to paste. Needs HTTPS. Pasting a key still works.
+* The settings screen shows the connected account, with a **Disconnect** button that revokes the site's key.
 
 = 0.2.0 =
-* New filters: companies (with company search), occupations, job categories and subcategories, languages, industries, primary industry, business model, company size, annual revenue, staffing agencies, and a posted-after date.
-* New Exclude section: leave out companies, occupations, categories, industries, sources, languages and more.
-* Job descriptions are imported as HTML instead of Markdown, so they render formatted.
-* Existing settings keep working unchanged, and upgrading does not trigger a full re-import.
+* New company, occupation, category, language and industry filters, and an Exclude section.
+* Job descriptions are imported as HTML instead of Markdown.
 
 = 0.1.0 =
 * Initial release.
 
 == Upgrade Notice ==
 
-= 0.3.1 =
-Fixes company search with special characters and the closed-jobs check. Adds an optional enhanced description layout.
-
-= 0.3.0 =
-Adds Sign in with Jobo. Your saved API key, filters and sync position are kept.
-
-= 0.1.0 =
-Initial release.
+= 0.4.0 =
+Adds a Scheduled sync switch (on for a site that has synced) and listing pages for the built-in post type.

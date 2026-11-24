@@ -14,6 +14,7 @@
  * @var array<string,mixed> $state        Persisted sync state.
  * @var Jobo_Target         $target       Target that will actually be written.
  * @var bool                $has_key      Whether an API key is configured.
+ * @var bool                $sync_on      Whether scheduled sync is on.
  * @var array<string,mixed> $connection   Jobo_OAuth::status(): available, signed_in, email.
  * @var string              $signin_error Why a sign-in just failed, or ''.
  */
@@ -122,6 +123,10 @@ foreach ( get_settings_errors( Jobo_Settings::OPTION_NAME ) as $jobo_settings_er
 		<div class="jobo-banner jobo-banner--critical">
 			<p><?php esc_html_e( 'The sync did not complete. See the details below.', 'career-site-jobs' ); ?></p>
 		</div>
+	<?php elseif ( 'busy' === $jobo_result ) : ?>
+		<div class="jobo-banner jobo-banner--warning">
+			<p><?php esc_html_e( 'Another sync is already running, so this one did not start. Try again in a few minutes.', 'career-site-jobs' ); ?></p>
+		</div>
 	<?php elseif ( 'connected' === $jobo_result && $jobo_signed_in ) : ?>
 		<div class="jobo-banner jobo-banner--success">
 			<p>
@@ -192,6 +197,23 @@ foreach ( get_settings_errors( Jobo_Settings::OPTION_NAME ) as $jobo_settings_er
 		</div>
 	<?php endif; ?>
 
+	<?php if ( $has_key && ! $sync_on ) : ?>
+		<div class="jobo-banner jobo-banner--warning">
+			<p>
+				<?php
+				printf(
+					wp_kses(
+						/* translators: %s: label of the scheduled sync checkbox. */
+						__( 'Connected to Jobo. Next, choose which jobs to import under <strong>Which jobs to import</strong>, then tick <strong>%s</strong> and save. Until then nothing is imported on a schedule; <strong>Sync now</strong> runs one sync straight away.', 'career-site-jobs' ),
+						array( 'strong' => array() )
+					),
+					esc_html__( 'Sync automatically', 'career-site-jobs' )
+				);
+				?>
+			</p>
+		</div>
+	<?php endif; ?>
+
 	<section class="jobo-section">
 		<h2 class="jobo-section-title"><?php esc_html_e( 'Status', 'career-site-jobs' ); ?></h2>
 
@@ -222,9 +244,12 @@ foreach ( get_settings_errors( Jobo_Settings::OPTION_NAME ) as $jobo_settings_er
 				<div class="jobo-defgrid-label"><?php esc_html_e( 'Scan position', 'career-site-jobs' ); ?></div>
 				<div class="jobo-defgrid-value">
 					<?php
-					if ( '' !== (string) $state['feed_cursor'] ) {
+					$jobo_filters_same = Jobo_Sync::filters_fingerprint( Jobo_Settings::to_feed_params() ) === (string) $state['feed_filters'];
+					if ( '' !== (string) $state['feed_cursor'] && ( $jobo_filters_same || '' === (string) $state['feed_filters'] ) ) {
 						esc_html_e( 'Part-way through a scan; the next run resumes where it stopped.', 'career-site-jobs' );
-					} elseif ( '' !== (string) $state['feed_watermark'] && Jobo_Sync::filters_fingerprint( Jobo_Settings::to_feed_params() ) === (string) $state['feed_filters'] ) {
+					} elseif ( '' !== (string) $state['feed_cursor'] ) {
+						esc_html_e( 'Your filters changed during a scan. The next run starts a new scan that imports every job matching the new filters.', 'career-site-jobs' );
+					} elseif ( '' !== (string) $state['feed_watermark'] && $jobo_filters_same ) {
 						esc_html_e( 'Up to date — the next run fetches only jobs that are new or changed since the last scan.', 'career-site-jobs' );
 					} else {
 						esc_html_e( 'The next run imports every job that matches your filters.', 'career-site-jobs' );
@@ -232,6 +257,23 @@ foreach ( get_settings_errors( Jobo_Settings::OPTION_NAME ) as $jobo_settings_er
 					?>
 				</div>
 			</div>
+			<?php if ( ! empty( $state['last_sync_at'] ) ) : ?>
+				<div class="jobo-defgrid-row">
+					<div class="jobo-defgrid-label"><?php esc_html_e( 'Billed in the last sync', 'career-site-jobs' ); ?></div>
+					<div class="jobo-defgrid-value jobo-num">
+						<?php
+						echo esc_html(
+							sprintf(
+								/* translators: 1: number of jobs billed, 2: number of credits deducted. */
+								__( '%1$s jobs, %2$s credits', 'career-site-jobs' ),
+								$jobo_fmt( (int) $state['last_run_billed'] ),
+								$jobo_fmt( (int) $state['last_run_credits'] )
+							)
+						);
+						?>
+					</div>
+				</div>
+			<?php endif; ?>
 			<div class="jobo-defgrid-row">
 				<div class="jobo-defgrid-label"><?php esc_html_e( 'Jobs added', 'career-site-jobs' ); ?></div>
 				<div class="jobo-defgrid-value jobo-num"><?php echo esc_html( $jobo_fmt( (int) $state['imported_total'] ) ); ?></div>
@@ -288,7 +330,7 @@ foreach ( get_settings_errors( Jobo_Settings::OPTION_NAME ) as $jobo_settings_er
 
 		<?php if ( $has_key ) : ?>
 			<p class="jobo-section-desc">
-				<?php esc_html_e( 'Resyncing imports every job that matches your filters again, and each one counts toward your usage again. Regular syncs already fetch new and changed jobs, so you rarely need it. Existing listings are matched on their Jobo job ID and updated in place, so nothing is duplicated.', 'career-site-jobs' ); ?>
+				<?php esc_html_e( 'Resyncing imports every job that matches your filters again. Jobs your Jobo account received in the last 30 days are not billed again; the rest are. Regular syncs already fetch new and changed jobs, so you rarely need it. Existing listings are matched on their Jobo job ID and updated in place, so nothing is duplicated.', 'career-site-jobs' ); ?>
 			</p>
 		<?php endif; ?>
 	</section>
@@ -530,8 +572,21 @@ foreach ( get_settings_errors( Jobo_Settings::OPTION_NAME ) as $jobo_settings_er
 
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
+					<label for="jobo_sync_enabled"><?php esc_html_e( 'Scheduled sync', 'career-site-jobs' ); ?></label>
+					<p class="jobo-field-desc"><?php esc_html_e( 'Off until you turn it on, so nothing is imported before you have chosen which jobs you want. Sync now and Resync everything work either way.', 'career-site-jobs' ); ?></p>
+				</div>
+				<div class="jobo-field-control">
+					<label class="jobo-inline-check">
+						<input type="checkbox" id="jobo_sync_enabled" name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[sync_enabled]" value="1" <?php checked( $sync_on ); ?> />
+						<?php esc_html_e( 'Sync automatically', 'career-site-jobs' ); ?>
+					</label>
+				</div>
+			</div>
+
+			<div class="jobo-field-row">
+				<div class="jobo-field-label">
 					<label for="jobo_sync_interval"><?php esc_html_e( 'Sync frequency', 'career-site-jobs' ); ?></label>
-					<p class="jobo-field-desc"><?php esc_html_e( 'After the first import, each sync fetches only jobs that are new or changed since the last one, so syncing more often does not bill unchanged jobs again.', 'career-site-jobs' ); ?></p>
+					<p class="jobo-field-desc"><?php esc_html_e( 'After the first import, each sync fetches only jobs that are new or changed since the last one. A job is billed once per 30 days however often you sync.', 'career-site-jobs' ); ?></p>
 				</div>
 				<div class="jobo-field-control">
 					<select id="jobo_sync_interval" name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[sync_interval]">
@@ -573,7 +628,7 @@ foreach ( get_settings_errors( Jobo_Settings::OPTION_NAME ) as $jobo_settings_er
 		<section class="jobo-section">
 			<h2 class="jobo-section-title"><?php esc_html_e( 'Which jobs to import', 'career-site-jobs' ); ?></h2>
 			<p class="jobo-section-desc">
-				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing keeps your board relevant and usage predictable; imports use your plan\'s included jobs first, and with Unlimited, Feed imports have no per-job charge. After you change these filters, the next sync imports every matching job again.', 'career-site-jobs' ); ?>
+				<?php esc_html_e( 'Leave everything blank to import all jobs. Narrowing keeps your board relevant and usage predictable; imports use your plan\'s included jobs first, and with Unlimited, Feed imports have no per-job charge. After you change these filters, the next sync imports every matching job again, even part-way through a scan, and then retires listings that only matched the old filters (as set under When a job closes).', 'career-site-jobs' ); ?>
 			</p>
 			<?php
 			// Every field here maps onto a key in feed_filter_keys
@@ -654,7 +709,7 @@ foreach ( get_settings_errors( Jobo_Settings::OPTION_NAME ) as $jobo_settings_er
 				<div class="jobo-field-label">
 					<label for="jobo_locations"><?php esc_html_e( 'Locations', 'career-site-jobs' ); ?></label>
 					<p class="jobo-field-desc">
-						<?php esc_html_e( 'Use "Country", "Region, Country", or "City, Region, Country" — for example: Germany / Bavaria, Germany / Berlin, Berlin, Germany', 'career-site-jobs' ); ?>
+						<?php esc_html_e( 'Use "Country", "Region, Country", or "City, Region, Country" — for example: Germany / Bavaria, Germany / Berlin, Berlin, Germany. For a city with no region, leave the middle empty: Singapore, , Singapore.', 'career-site-jobs' ); ?>
 					</p>
 				</div>
 				<div class="jobo-field-control">

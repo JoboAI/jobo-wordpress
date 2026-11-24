@@ -110,6 +110,44 @@
 
 		var abortController = null;
 
+		function cleanPart(part) {
+			return typeof part === "string" ? part.trim() : "";
+		}
+
+		// The saved line for a suggestion, built from its structured parts.
+		// parse_locations() reads two parts as region + country, so a city
+		// with no region is written "City, , Country": the empty middle part
+		// keeps it a city. Empty when the suggestion names no country.
+		function locationLine(s) {
+			var city = cleanPart(s.city);
+			var region = cleanPart(s.region);
+			var country = cleanPart(s.country);
+			if (country === "") {
+				return "";
+			}
+			if (city !== "") {
+				return [city, region, country].join(", ");
+			}
+			if (region !== "") {
+				return region + ", " + country;
+			}
+			return country;
+		}
+
+		// A saved line as a chip label: "Singapore, , Singapore" reads
+		// "Singapore, Singapore".
+		function lineLabel(line) {
+			return line
+				.split(",")
+				.map(function (part) {
+					return part.trim();
+				})
+				.filter(function (part) {
+					return part !== "";
+				})
+				.join(", ");
+		}
+
 		createJoboCombobox(mount, {
 			multi: true,
 			// Free text keeps the field usable when the suggest endpoint is
@@ -121,7 +159,7 @@
 			ariaLabel: t("locationsAriaLabel", "Locations"),
 			noMatchesText: t("noMatches", "No matches"),
 			initialValues: initialLines.map(function (line) {
-				return { label: line, value: line };
+				return { label: lineLabel(line), value: line };
 			}),
 			fetchSuggestions: function (query) {
 				if (abortController) {
@@ -140,7 +178,7 @@
 										return typeof part === "string" && part !== "";
 									})
 									.join(", ");
-							return { label: label, value: label };
+							return { label: label, value: locationLine(s) || label };
 						})
 						.filter(function (item) {
 							return item.label !== "";

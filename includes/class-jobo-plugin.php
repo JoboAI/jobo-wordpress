@@ -34,6 +34,7 @@ class Jobo_Plugin {
 
 	public function boot(): void {
 		add_action( 'init', array( 'Jobo_CPT_Target', 'register_post_type' ) );
+		Jobo_CPT_Target::register_front_end();
 		add_action( 'admin_init', array( $this->settings, 'register' ) );
 		add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
 		add_action( 'admin_notices', array( new Jobo_Admin_Notices( $this->state ), 'render' ) );
@@ -46,7 +47,9 @@ class Jobo_Plugin {
 		add_action( 'admin_post_' . self::ACTION_SYNC_NOW, array( $this, 'handle_sync_now' ) );
 		add_action( 'admin_post_' . self::ACTION_RESYNC, array( $this, 'handle_full_resync' ) );
 
-		// Keep the cron schedule aligned with the configured interval.
+		// Keep the cron schedule aligned with the configured interval. The
+		// event stays scheduled while scheduled sync is off; each run then
+		// returns at once (see Jobo_Sync::run()).
 		add_action( 'update_option_' . Jobo_Settings::OPTION_NAME, array( $this, 'reschedule' ) );
 	}
 
@@ -152,13 +155,17 @@ class Jobo_Plugin {
 		wp_add_inline_script( 'jobo-jobs-admin', 'var joboAdmin = ' . (string) wp_json_encode( $config ) . ';', 'before' );
 	}
 
+	/**
+	 * "Sync now": an explicit request, so it runs whether or not scheduled
+	 * sync is on.
+	 */
 	public function handle_sync_now(): void {
 		$this->guard( self::ACTION_SYNC_NOW );
 
-		$summary = $this->sync->run();
+		$summary = $this->sync->run( true );
 
 		$this->redirect_back(
-			'ok' === $summary['status'] ? 'synced' : 'failed',
+			self::result_for( $summary, 'synced' ),
 			array(
 				'created' => (int) $summary['created'],
 				'updated' => (int) $summary['updated'],
@@ -167,19 +174,38 @@ class Jobo_Plugin {
 		);
 	}
 
+	/**
+	 * "Resync everything". The scan is reset inside the run, under its lock,
+	 * so it cannot pull the cursor from under a run already in progress.
+	 */
 	public function handle_full_resync(): void {
 		$this->guard( self::ACTION_RESYNC );
 
-		$this->state->reset_scan();
-		$summary = $this->sync->run();
+		$summary = $this->sync->run( true, true );
 
 		$this->redirect_back(
-			'ok' === $summary['status'] ? 'resynced' : 'failed',
+			self::result_for( $summary, 'resynced' ),
 			array(
 				'created' => (int) $summary['created'],
 				'updated' => (int) $summary['updated'],
 			)
 		);
+	}
+
+	/**
+	 * The result notice a manual run redirects to.
+	 *
+	 * @param array<string,mixed> $summary Jobo_Sync::run() summary.
+	 * @param string              $success Result for a run that completed.
+	 */
+	private static function result_for( array $summary, string $success ): string {
+		if ( 'ok' === $summary['status'] ) {
+			return $success;
+		}
+		if ( 'skipped' === $summary['status'] && 'locked' === $summary['reason'] ) {
+			return 'busy';
+		}
+		return 'failed';
 	}
 
 	/**
@@ -214,6 +240,7 @@ class Jobo_Plugin {
 		$state    = $this->state->all();
 		$target   = $this->sync->resolve_target();
 		$has_key  = '' !== $settings['api_key'];
+		$sync_on  = ! empty( $settings['sync_enabled'] );
 
 		// Whether sign-in is offered, whether the saved key came from one, and
 		// the message of a sign-in that just failed.

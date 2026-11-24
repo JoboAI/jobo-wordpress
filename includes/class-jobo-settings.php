@@ -135,6 +135,10 @@ class Jobo_Settings {
 	 * Every key defaults to "no filter", so settings saved by an earlier
 	 * version read back unchanged and send the same feed request.
 	 *
+	 * `sync_enabled` is off for a new site, so nothing is imported (or
+	 * billed) on a schedule before the owner has chosen filters. get()
+	 * reads it as on for a site that synced before the setting existed.
+	 *
 	 * @return array<string,mixed>
 	 */
 	public static function defaults(): array {
@@ -146,6 +150,7 @@ class Jobo_Settings {
 			'description_format' => 'html',
 			'batch_size'          => 250,
 			'max_batches'         => 4,
+			'sync_enabled'        => false,
 			'sync_interval'       => 'hourly',
 			'expire_action'       => 'draft',
 			'locations'           => '',
@@ -167,7 +172,30 @@ class Jobo_Settings {
 	 */
 	public static function get(): array {
 		$stored = get_option( self::OPTION_NAME, array() );
-		return wp_parse_args( is_array( $stored ) ? $stored : array(), self::defaults() );
+		$stored = is_array( $stored ) ? $stored : array();
+
+		if ( ! array_key_exists( 'sync_enabled', $stored ) ) {
+			$state                  = get_option( Jobo_State::OPTION_STATE, array() );
+			$stored['sync_enabled'] = self::resolve_sync_enabled( $stored, is_array( $state ) ? $state : array() );
+		}
+
+		return wp_parse_args( $stored, self::defaults() );
+	}
+
+	/**
+	 * Whether scheduled syncs run. Settings saved before 0.4.0 have no
+	 * `sync_enabled` key: a site that has already synced keeps syncing, and
+	 * one that never has waits for the owner to turn it on.
+	 *
+	 * @param array<string,mixed> $stored Settings as stored, before defaults.
+	 * @param array<string,mixed> $state  Sync state as stored.
+	 */
+	public static function resolve_sync_enabled( array $stored, array $state ): bool {
+		if ( array_key_exists( 'sync_enabled', $stored ) ) {
+			return ! empty( $stored['sync_enabled'] );
+		}
+
+		return (int) ( $state['last_sync_at'] ?? 0 ) > 0;
 	}
 
 	/**
@@ -263,6 +291,8 @@ class Jobo_Settings {
 		$clean['sync_interval'] = in_array( $input['sync_interval'] ?? '', array( 'hourly', 'twicedaily', 'daily' ), true ) ? $input['sync_interval'] : 'hourly';
 
 		$clean['description_format'] = in_array( $input['description_format'] ?? '', self::DESCRIPTION_FORMATS, true ) ? $input['description_format'] : 'html';
+
+		$clean['sync_enabled'] = ! empty( $input['sync_enabled'] );
 
 		$clean['batch_size']  = min( 1000, max( 1, (int) ( $input['batch_size'] ?? 250 ) ) );
 		$clean['max_batches'] = min( 50, max( 1, (int) ( $input['max_batches'] ?? 4 ) ) );
@@ -507,6 +537,10 @@ class Jobo_Settings {
 	 * Parse one "City, Region, Country" pair per line into the structured
 	 * location objects the feed expects.
 	 *
+	 * Two parts always mean region + country, so a city with no region is
+	 * written with an empty middle part: "Singapore, , Singapore". The
+	 * location picker writes that form for such a city.
+	 *
 	 * @return array<int,array<string,string>>
 	 */
 	public static function parse_locations( string $raw ): array {
@@ -518,8 +552,18 @@ class Jobo_Settings {
 				continue;
 			}
 
-			$parts = array_values( array_filter( array_map( 'trim', explode( ',', $line ) ), 'strlen' ) );
+			$tokens = array_map( 'trim', explode( ',', $line ) );
+			$parts  = array_values( array_filter( $tokens, 'strlen' ) );
 			if ( empty( $parts ) ) {
+				continue;
+			}
+
+			// "City, , Country": a city with no region.
+			if ( 3 === count( $tokens ) && '' !== $tokens[0] && '' === $tokens[1] && '' !== $tokens[2] ) {
+				$out[] = array(
+					'city'    => $tokens[0],
+					'country' => $tokens[2],
+				);
 				continue;
 			}
 

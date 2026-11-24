@@ -34,7 +34,9 @@ interface Jobo_Target {
 	public function prime_lookup( array $job_ids ): void;
 
 	/**
-	 * Create or update a listing.
+	 * Create or update a listing. An update leaves the status alone, except
+	 * that a listing expire() retired, and nobody has touched since, gets
+	 * back the status it had: the job has reopened.
 	 *
 	 * @param array<string,mixed> $job         A JobDto from the feed.
 	 * @param string              $post_status Desired status for new posts.
@@ -43,7 +45,8 @@ interface Jobo_Target {
 	public function upsert( array $job, string $post_status ): string;
 
 	/**
-	 * Retire a listing whose job is no longer active.
+	 * Retire a listing whose job is no longer active, remembering the status
+	 * it had so upsert() can restore it if the job reopens.
 	 *
 	 * @param string $job_id Jobo job id.
 	 * @param string $action 'draft', 'trash' or 'keep'.
@@ -74,6 +77,13 @@ abstract class Jobo_Abstract_Target implements Jobo_Target {
 	const META_JOB_ID     = '_jobo_job_id';
 	const META_SOURCE     = '_jobo_source';
 	const META_SYNCED_AT  = '_jobo_synced_at';
+	const META_EXPIRED    = '_jobo_expired';
+
+	/**
+	 * Set when expire() changed a listing's status: {from, to}, the status it
+	 * had and the one expire() left it in. Cleared by the next upsert.
+	 */
+	const META_RETIRED    = '_jobo_retired';
 
 	abstract protected function get_post_type(): string;
 
@@ -163,13 +173,28 @@ abstract class Jobo_Abstract_Target implements Jobo_Target {
 
 		if ( $existing ) {
 			$postarr['ID'] = $existing;
+
 			// Status is deliberately not forced on update, so an editor's
-			// manual unpublish is not undone on the next sync.
-			$result = wp_update_post( $postarr, true );
+			// manual unpublish is not undone on the next sync. The exception
+			// is a listing expire() retired that is still as expire() left
+			// it: its job has reopened, so it gets back the status it had.
+			$current = (string) get_post_status( $existing );
+			$restore = self::restore_status( get_post_meta( $existing, self::META_RETIRED, true ), $current );
+			if ( '' !== $restore ) {
+				if ( 'trash' === $current ) {
+					// Clears the trash bookkeeping and the slug's __trashed suffix.
+					wp_untrash_post( $existing );
+				}
+				$postarr['post_status'] = $restore;
+			}
+
+			// wp_update_post() and wp_insert_post() unslash their input, which
+			// would strip every backslash from the title and description.
+			$result = wp_update_post( wp_slash( $postarr ), true );
 			$action = 'updated';
 		} else {
 			$postarr['post_status'] = $post_status;
-			$result                 = wp_insert_post( $postarr, true );
+			$result                 = wp_insert_post( wp_slash( $postarr ), true );
 			$action                 = 'created';
 		}
 
@@ -183,9 +208,12 @@ abstract class Jobo_Abstract_Target implements Jobo_Target {
 		// updates the row we just wrote rather than inserting a second post.
 		$this->lookup[ $job_id ] = $post_id;
 
-		update_post_meta( $post_id, self::META_JOB_ID, $job_id );
-		update_post_meta( $post_id, self::META_SOURCE, sanitize_text_field( (string) ( $job['source'] ?? '' ) ) );
-		update_post_meta( $post_id, self::META_SYNCED_AT, time() );
+		$this->set_meta( $post_id, self::META_JOB_ID, $job_id );
+		$this->set_meta( $post_id, self::META_SOURCE, sanitize_text_field( (string) ( $job['source'] ?? '' ) ) );
+		$this->set_meta( $post_id, self::META_SYNCED_AT, time() );
+
+		// Restored or left as an editor set it, the retirement is over.
+		delete_post_meta( $post_id, self::META_RETIRED );
 
 		$this->write_meta( $post_id, $job );
 
@@ -198,20 +226,74 @@ abstract class Jobo_Abstract_Target implements Jobo_Target {
 			return false;
 		}
 
-		if ( 'trash' === $action ) {
-			wp_trash_post( $post_id );
-		} elseif ( 'draft' === $action ) {
-			wp_update_post(
+		$current = (string) get_post_status( $post_id );
+		$to      = in_array( $action, array( 'draft', 'trash' ), true ) ? $action : '';
+
+		// A listing an editor put in the trash stays there.
+		if ( '' !== $to && 'trash' !== $current && $to !== $current ) {
+			$marker = get_post_meta( $post_id, self::META_RETIRED, true );
+
+			if ( 'trash' === $to ) {
+				wp_trash_post( $post_id );
+			} else {
+				wp_update_post(
+					array(
+						'ID'          => $post_id,
+						'post_status' => 'draft',
+					)
+				);
+			}
+
+			// Retired again before it reopened (drafted, then trashed): the
+			// status to come back to is still the one it had first.
+			$from = is_array( $marker ) && isset( $marker['from'], $marker['to'] ) && $current === (string) $marker['to'] ? (string) $marker['from'] : $current;
+
+			$this->set_meta(
+				$post_id,
+				self::META_RETIRED,
 				array(
-					'ID'          => $post_id,
-					'post_status' => 'draft',
+					'from' => $from,
+					'to'   => $to,
 				)
 			);
 		}
 
-		update_post_meta( $post_id, '_jobo_expired', 1 );
+		$this->set_meta( $post_id, self::META_EXPIRED, 1 );
 
 		return true;
+	}
+
+	/**
+	 * The status a reopened job's listing goes back to: the one it had before
+	 * expire() retired it, but only while it is still in the status expire()
+	 * left it in. Anything else is an editor's choice, which wins. Empty
+	 * means leave the status alone.
+	 *
+	 * @param mixed  $marker  The stored META_RETIRED value.
+	 * @param string $current The listing's status now.
+	 */
+	public static function restore_status( $marker, string $current ): string {
+		if ( ! is_array( $marker ) || empty( $marker['from'] ) || empty( $marker['to'] ) ) {
+			return '';
+		}
+
+		if ( $current !== (string) $marker['to'] || $current === (string) $marker['from'] ) {
+			return '';
+		}
+
+		return (string) $marker['from'];
+	}
+
+	/**
+	 * update_post_meta() unslashes the value it is given, which would strip
+	 * backslashes from it; slashing first stores the value as it is.
+	 *
+	 * @param int    $post_id Post being written.
+	 * @param string $key     Meta key.
+	 * @param mixed  $value   Value to store.
+	 */
+	protected function set_meta( int $post_id, string $key, $value ): void {
+		update_post_meta( $post_id, $key, wp_slash( $value ) );
 	}
 
 	/**
@@ -234,7 +316,7 @@ abstract class Jobo_Abstract_Target implements Jobo_Target {
 				   AND expired.meta_id IS NULL AND CAST( synced.meta_value AS UNSIGNED ) < %d
 				 LIMIT %d",
 				self::META_SYNCED_AT,
-				'_jobo_expired',
+				self::META_EXPIRED,
 				self::META_JOB_ID,
 				$this->get_post_type(),
 				$before,

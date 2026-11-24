@@ -4,9 +4,10 @@
  *
  * The feed cursor and watermark live here rather than being recomputed from a
  * relative window on each run. That distinction matters: a cursor or watermark
- * that fails to advance re-imports (and re-bills) the same jobs on every cron
- * tick, and it looks correct while testing because the resulting listings are
- * right.
+ * that fails to advance re-imports the same jobs on every cron tick, and it
+ * looks correct while testing because the resulting listings are right.
+ * Re-delivering a job within 30 days is not billed again, but every job the
+ * account has not received in that window is.
  *
  * @package Jobo_Jobs
  */
@@ -31,36 +32,55 @@ class Jobo_State {
 			$this->cache = wp_parse_args(
 				is_array( $stored ) ? $stored : array(),
 				array(
-					'feed_cursor'        => '',
+					'feed_cursor'             => '',
 					// When the last completed pass began; '' makes the next pass a full one.
-					'feed_watermark'     => '',
+					'feed_watermark'          => '',
 					// Fingerprint of the filters the watermark was earned under.
-					'feed_filters'       => '',
-					'pass_started_at'    => 0,
-					// Expiry recovery: a full pass is due, then a reconcile of
-					// listings last synced before that pass began.
-					'reconcile_pending'  => false,
-					'reconcile_before'   => 0,
-					'last_sync_at'       => 0,
-					'last_sync_status'   => '',
-					'last_error'         => '',
-					'last_error_at'      => 0,
-					'expired_since'      => '',
-					'credits_balance'    => null,
-					'quota_limit'        => null,
-					'quota_remaining'    => null,
-					'imported_total'     => 0,
-					'updated_total'      => 0,
-					'expired_total'      => 0,
-					'last_run_imported'  => 0,
-					'last_run_updated'   => 0,
-					'last_run_expired'   => 0,
-					'last_run_credits'   => 0,
+					'feed_filters'            => '',
+					'pass_started_at'         => 0,
+					// A full pass is due (after a long stall, or a filter
+					// change), then a reconcile of listings last synced before
+					// that pass began.
+					'reconcile_pending'       => false,
+					'reconcile_before'        => 0,
+					'last_sync_at'            => 0,
+					'last_sync_status'        => '',
+					'last_error'              => '',
+					'last_error_at'           => 0,
+					// When the last completed expiry pass began: the next pass
+					// asks for closures since then.
+					'expired_since'           => '',
+					// An expiry pass in progress: its cursor, the expired_since
+					// it runs under, and when it began.
+					'expired_cursor'          => '',
+					'expired_cursor_since'    => '',
+					'expired_pass_started_at' => 0,
+					'credits_balance'         => null,
+					'quota_limit'             => null,
+					'quota_remaining'         => null,
+					'imported_total'          => 0,
+					'updated_total'           => 0,
+					'expired_total'           => 0,
+					'last_run_imported'       => 0,
+					'last_run_updated'        => 0,
+					'last_run_expired'        => 0,
+					// What the last run's feed pages reported: jobs billed
+					// (X-Jobs-Billed) and credits deducted (X-Credits-Deducted).
+					'last_run_billed'         => 0,
+					'last_run_credits'        => 0,
 				)
 			);
 		}
 
 		return $this->cache;
+	}
+
+	/**
+	 * Forget the cached copy, so the next read sees what another request
+	 * (a cron run, say) wrote since this one loaded it.
+	 */
+	public function reload(): void {
+		$this->cache = null;
 	}
 
 	/**
@@ -93,8 +113,9 @@ class Jobo_State {
 	}
 
 	/**
-	 * Drop the cursor and the watermark, so the next run delivers (and bills)
-	 * every matching job again. Backs the "Resync everything" admin action.
+	 * Drop the cursor and the watermark, so the next run delivers every
+	 * matching job again (billing only those this account was not delivered
+	 * in the last 30 days). Backs the "Resync everything" admin action.
 	 */
 	public function reset_scan(): void {
 		$this->update(

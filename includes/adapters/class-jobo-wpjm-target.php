@@ -38,28 +38,28 @@ class Jobo_WPJM_Target extends Jobo_Abstract_Target {
 	protected function write_meta( int $post_id, array $job ): void {
 		$company = isset( $job['company'] ) && is_array( $job['company'] ) ? $job['company'] : array();
 
-		update_post_meta( $post_id, '_company_name', sanitize_text_field( (string) ( $company['name'] ?? '' ) ) );
-		update_post_meta( $post_id, '_company_website', esc_url_raw( (string) ( $company['website'] ?? '' ) ) );
-		update_post_meta( $post_id, '_company_logo', esc_url_raw( (string) ( $company['logo_url'] ?? '' ) ) );
-		update_post_meta( $post_id, '_job_location', $this->format_location( $job ) );
+		$this->set_meta( $post_id, '_company_name', sanitize_text_field( (string) ( $company['name'] ?? '' ) ) );
+		$this->set_meta( $post_id, '_company_website', esc_url_raw( (string) ( $company['website'] ?? '' ) ) );
+		$this->set_meta( $post_id, '_company_logo', esc_url_raw( (string) ( $company['logo_url'] ?? '' ) ) );
+		$this->set_meta( $post_id, '_job_location', $this->format_location( $job ) );
 
 		// WP Job Manager accepts either an email or a URL in _application.
 		$apply = (string) ( $job['apply_url'] ?? $job['listing_url'] ?? '' );
-		update_post_meta( $post_id, '_application', esc_url_raw( $apply ) );
+		$this->set_meta( $post_id, '_application', esc_url_raw( $apply ) );
 
 		$remote = isset( $job['workplace_type'] ) && 'remote' === strtolower( (string) $job['workplace_type'] );
-		update_post_meta( $post_id, '_remote_position', $remote ? 1 : 0 );
+		$this->set_meta( $post_id, '_remote_position', $remote ? 1 : 0 );
 
 		if ( ! empty( $job['valid_through'] ) ) {
 			$expires = strtotime( (string) $job['valid_through'] );
 			if ( false !== $expires ) {
-				update_post_meta( $post_id, '_job_expires', gmdate( 'Y-m-d', $expires ) );
+				$this->set_meta( $post_id, '_job_expires', gmdate( 'Y-m-d', $expires ) );
 			}
 		}
 
 		// A freshly (re)synced job is by definition still open.
-		update_post_meta( $post_id, '_filled', 0 );
-		delete_post_meta( $post_id, '_jobo_expired' );
+		$this->set_meta( $post_id, '_filled', 0 );
+		delete_post_meta( $post_id, self::META_EXPIRED );
 
 		$this->assign_type( $post_id, $job );
 	}
@@ -118,7 +118,7 @@ class Jobo_WPJM_Target extends Jobo_Abstract_Target {
 		// Mark filled as well as applying the configured action — WP Job
 		// Manager's templates key off _filled, so a kept-but-closed listing
 		// still reads correctly on the front end.
-		update_post_meta( $post_id, '_filled', 1 );
+		$this->set_meta( $post_id, '_filled', 1 );
 
 		return parent::expire( $job_id, $action );
 	}
