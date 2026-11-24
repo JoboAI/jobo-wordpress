@@ -487,6 +487,27 @@ foreach ( get_settings_errors( Jobo_Settings::OPTION_NAME ) as $jobo_settings_er
 
 			<div class="jobo-field-row">
 				<div class="jobo-field-label">
+					<label for="jobo_description_format"><?php esc_html_e( 'Description layout', 'career-site-jobs' ); ?></label>
+					<p class="jobo-field-desc"><?php esc_html_e( 'Enhanced gives every description the same layout: headings, lists and key facts, without the repeated title, buttons and tracking tags. It is automatic and in beta, and a job without an enhanced description uses its standard one. Applies to jobs imported or updated from now on.', 'career-site-jobs' ); ?></p>
+				</div>
+				<div class="jobo-field-control">
+					<select id="jobo_description_format" name="<?php echo esc_attr( Jobo_Settings::OPTION_NAME ); ?>[description_format]">
+						<?php
+						foreach ( array(
+							'html'          => __( 'Standard', 'career-site-jobs' ),
+							'enhanced_html' => __( 'Enhanced (beta)', 'career-site-jobs' ),
+						) as $jobo_value => $jobo_label ) :
+							?>
+							<option value="<?php echo esc_attr( $jobo_value ); ?>" <?php selected( $settings['description_format'], $jobo_value ); ?>>
+								<?php echo esc_html( $jobo_label ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+			</div>
+
+			<div class="jobo-field-row">
+				<div class="jobo-field-label">
 					<label for="jobo_expire_action"><?php esc_html_e( 'When a job closes', 'career-site-jobs' ); ?></label>
 					<p class="jobo-field-desc"><?php esc_html_e( 'Checking for closed jobs is always free.', 'career-site-jobs' ); ?></p>
 				</div>

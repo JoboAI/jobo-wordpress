@@ -15,6 +15,12 @@ class Jobo_Settings {
 	const OPTION_NAME  = 'jobo_jobs_settings';
 
 	/**
+	 * The description formats a WordPress site can use: the API's two HTML
+	 * ones. Its Markdown formats would show their syntax in post content.
+	 */
+	const DESCRIPTION_FORMATS = array( 'html', 'enhanced_html' );
+
+	/**
 	 * Filter values are lowercase and canonical on input. These mirror the
 	 * enums in Jobo.Connectors/contracts/filters.json; the pure-logic tests
 	 * fail if they drift.
@@ -136,6 +142,8 @@ class Jobo_Settings {
 			'api_key'             => '',
 			'target'              => 'auto',
 			'post_status'         => 'publish',
+			// 'html' or 'enhanced_html': how each description is laid out.
+			'description_format' => 'html',
 			'batch_size'          => 250,
 			'max_batches'         => 4,
 			'sync_interval'       => 'hourly',
@@ -253,6 +261,8 @@ class Jobo_Settings {
 		$clean['post_status']   = in_array( $input['post_status'] ?? '', array( 'publish', 'draft', 'pending' ), true ) ? $input['post_status'] : 'publish';
 		$clean['expire_action'] = in_array( $input['expire_action'] ?? '', array( 'draft', 'trash', 'keep' ), true ) ? $input['expire_action'] : 'draft';
 		$clean['sync_interval'] = in_array( $input['sync_interval'] ?? '', array( 'hourly', 'twicedaily', 'daily' ), true ) ? $input['sync_interval'] : 'hourly';
+
+		$clean['description_format'] = in_array( $input['description_format'] ?? '', self::DESCRIPTION_FORMATS, true ) ? $input['description_format'] : 'html';
 
 		$clean['batch_size']  = min( 1000, max( 1, (int) ( $input['batch_size'] ?? 250 ) ) );
 		$clean['max_batches'] = min( 50, max( 1, (int) ( $input['max_batches'] ?? 4 ) ) );
@@ -418,9 +428,10 @@ class Jobo_Settings {
 			'batch_size'         => (int) $settings['batch_size'],
 			'stable_scan'        => true,
 			// Listings are stored as post content, which WordPress renders as
-			// HTML; Markdown would show its syntax. Not a filter, so it is
-			// left out of the sync fingerprint.
-			'description_format' => 'html',
+			// HTML; Markdown would show its syntax, so only the two HTML
+			// formats are offered. Not a filter, so it is left out of the
+			// sync fingerprint.
+			'description_format' => in_array( $settings['description_format'] ?? '', self::DESCRIPTION_FORMATS, true ) ? $settings['description_format'] : 'html',
 		);
 
 		$plain_lists = array(

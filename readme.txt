@@ -1,10 +1,10 @@
 === Job Board & Career Site Jobs – Jobo ===
-Contributors: jobo
+Contributors: joboai
 Tags: job board, job listings, career site, jobs, recruitment
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.3.0
+Stable tag: 0.3.1
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -87,9 +87,13 @@ This plugin connects to Jobo (https://jobo.world), the service the jobs come fro
 
 = The Jobo API (connect.jobo.world) =
 
-Used to import jobs, close listings that are no longer open, check the connection, and suggest values in the filter fields. Requests are made on each scheduled sync, when you click **Sync now** or **Test connection**, and as you type in a filter field.
+Used to import jobs, close listings that are no longer open, check the connection, and suggest values in the filter fields. Requests are made on each scheduled sync, when you click **Sync now** or **Test connection**, when you open the plugin's settings screen while connected (to load the lists behind the filter fields), and as you type in a filter field.
 
-Each request sends your Jobo API key and the filters you saved (locations, sources, companies and the other settings on the plugin's page). No data about your site's visitors is sent.
+Each request sends your Jobo API key. An import also sends the filters you saved (locations, sources, companies and the other settings on the plugin's page), and a lookup sends the text you typed in that filter field. Every request carries the plugin's name and version and your site's address in its User-Agent header. The plugin sends no data about your site's visitors.
+
+= Company logos (images.jobo.world) =
+
+Company logos are not copied to your site. A listing stores the address of its company's logo, usually on Jobo's image host. Where your theme shows the logo, a visitor's browser loads it from that host, which sees the visitor's IP address and the page address, as with any embedded image.
 
 = Jobo sign-in (enterprise.jobo.world) =
 
@@ -101,13 +105,14 @@ If you paste an API key and never click **Sign in with Jobo**, the plugin does n
 
 Jobo's [terms of service](https://jobo.world/terms) and [privacy policy](https://jobo.world/privacy) apply to both.
 
-== Screenshots ==
-
-1. The Jobo Jobs settings screen, showing connection status.
-2. Location and source fields suggesting matching values as you type.
-3. The sync status panel — wallet balance and import history.
-
 == Changelog ==
+
+= 0.3.1 =
+* Fixed: text typed in a filter field reaches Jobo as typed. A company search with &, + or # (AT&T) was cut short.
+* Fixed: the check for closed jobs sends its start time correctly encoded.
+* New: Description layout. **Enhanced (beta)** gives every description the same headings, lists and key facts.
+* Uninstalling also removes the cached filter lists.
+* External services now lists what each request carries and where company logos load from.
 
 = 0.3.0 =
 * New: Sign in with Jobo. Connect the site by signing in to your Jobo account and approving the connection; there is no API key to create or paste. Needs a site served over HTTPS.
@@ -125,11 +130,11 @@ Jobo's [terms of service](https://jobo.world/terms) and [privacy policy](https:/
 
 == Upgrade Notice ==
 
+= 0.3.1 =
+Fixes company search with special characters and the closed-jobs check. Adds an optional enhanced description layout.
+
 = 0.3.0 =
 Adds Sign in with Jobo. Your saved API key, filters and sync position are kept.
-
-= 0.2.0 =
-Adds company, occupation, category, language and company filters plus excludes. Your current filters and sync position are kept.
 
 = 0.1.0 =
 Initial release.

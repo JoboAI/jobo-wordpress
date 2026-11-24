@@ -243,7 +243,15 @@ class Jobo_Client {
 			$args['headers']['Content-Type'] = 'application/json';
 			$args['body']                    = wp_json_encode( $params );
 		} elseif ( ! empty( $params ) ) {
-			$url = add_query_arg( array_map( array( $this, 'flatten' ), $params ), $url );
+			// add_query_arg() joins values as given: it does not encode them.
+			// Unencoded, a company search for "AT&T" reaches the API as "AT",
+			// and the "+00:00" of a timestamp arrives as a space, which the
+			// API cannot read as a date.
+			$query = array();
+			foreach ( $params as $name => $value ) {
+				$query[ $name ] = rawurlencode( (string) $this->flatten( $value ) );
+			}
+			$url = add_query_arg( $query, $url );
 		}
 
 		$response = wp_remote_request( $url, $args );

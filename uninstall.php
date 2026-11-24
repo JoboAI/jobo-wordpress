@@ -49,4 +49,8 @@ delete_option( 'jobo_jobs_state' );
 delete_option( 'jobo_jobs_oauth_client' );
 delete_option( 'jobo_jobs_oauth_account' );
 
+// The cached lookup lists behind the settings screen's filter fields.
+delete_transient( 'jobo_filter_options_v2' );
+delete_transient( 'jobo_occupations' );
+
 wp_clear_scheduled_hook( 'jobo_jobs_sync' );
